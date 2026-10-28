@@ -1,0 +1,7 @@
+Copyright (c) 2026 akisar. All rights reserved.
+
+This software and its compiled binaries are the sole property of the author. 
+No part of this mod may be modified, redistributed, or repackaged without 
+the explicit written permission of the author.
+
+For permission requests, please contact me on Nexus Mods.

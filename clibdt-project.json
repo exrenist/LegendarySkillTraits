@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "name": "LegendarySkillTraits",
+  "version": "1.0.0",
+  "author": "akisar",
+  "description": "Legendary skill traits and perks system for Skyrim SE/AE.",
+  "libraries": {
+    "commonlib": {
+      "name": "commonlib",
+      "revision": "a6d3ea4642f71fb92ac3e0d7fef5808217f8aae9",
+      "repository": "https://github.com/alandtse/CommonLibSSE-NG.git",
+      "adapter": "source-v2"
+    },
+    "xbyak": {
+      "name": "xbyak",
+      "revision": "df112862583c2d327c1d9782fd28f53aa675f11d",
+      "repository": "https://github.com/herumi/xbyak.git"
+    }
+  },
+  "created_at": 1793205145
+}
