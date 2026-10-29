@@ -5,11 +5,15 @@
   "pages": [
     {
       "pageDisplayName": "Combat & Armor",
-      "cursorFillMode": "topToBottom",
+      "cursorFillMode": "leftToRight",
       "content": [
         {
           "type": "header",
-          "text": "One-Handed"
+          "text": "One-Handed Settings"
+        },
+        {
+          "type": "header",
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -22,6 +26,15 @@
             "step": 1.0,
             "formatString": "{1}%",
             "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "type": "toggle",
+          "text": "Enable Damage Bonus",
+          "help": "Enable or disable One-Handed weapon damage bonus.",
+          "id": "bEnableOneHandedDamage:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
           }
         },
         {
@@ -38,11 +51,24 @@
           }
         },
         {
-          "type": "empty"
+          "type": "toggle",
+          "text": "Enable Critical Chance",
+          "help": "Enable or disable One-Handed critical chance bonus.",
+          "id": "bEnableOneHandedCrit:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Two-Handed Settings"
         },
         {
           "type": "header",
-          "text": "Two-Handed"
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -55,6 +81,15 @@
             "step": 1.0,
             "formatString": "{1}%",
             "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "type": "toggle",
+          "text": "Enable Damage Bonus",
+          "help": "Enable or disable Two-Handed weapon damage bonus.",
+          "id": "bEnableTwoHandedDamage:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
           }
         },
         {
@@ -71,11 +106,24 @@
           }
         },
         {
-          "type": "empty"
+          "type": "toggle",
+          "text": "Enable Critical Chance",
+          "help": "Enable or disable Two-Handed critical chance bonus.",
+          "id": "bEnableTwoHandedCrit:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Archery Settings"
         },
         {
           "type": "header",
-          "text": "Archery"
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -88,6 +136,15 @@
             "step": 1.0,
             "formatString": "{1}%",
             "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "type": "toggle",
+          "text": "Enable Archery Damage",
+          "help": "Enable or disable bow and crossbow damage bonus.",
+          "id": "bEnableArcheryDamage:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
           }
         },
         {
@@ -104,9 +161,18 @@
           }
         },
         {
+          "type": "toggle",
+          "text": "Enable Critical Chance",
+          "help": "Enable or disable Archery critical chance bonus.",
+          "id": "bEnableArcheryCrit:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
           "type": "slider",
           "text": "Target Stagger Bonus",
-          "help": "Chance and power to stagger opponents with arrows per legendary level.",
+          "help": "Chance to stagger opponents with arrows per legendary level.",
           "id": "fArcheryStaggerPerLevel:Combat",
           "valueOptions": {
             "min": 0.0,
@@ -117,16 +183,29 @@
           }
         },
         {
-          "type": "empty"
+          "type": "toggle",
+          "text": "Enable Arrow Stagger",
+          "help": "Enable or disable arrow hit stagger mechanic.",
+          "id": "bEnableArcheryStagger:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Block & Resistances"
         },
         {
           "type": "header",
-          "text": "Block"
+          "text": "Resistance Toggles"
         },
         {
           "type": "slider",
-          "text": "Passive Elemental & Magic Resistance",
-          "help": "Grants passive Fire, Frost, Shock, Poison & Magic resistance per legendary level. Engine hard-cap limits: 85% for Magic and Elements, 100% for Poison.",
+          "text": "Passive Resistance Scaling",
+          "help": "Percentage resistance granted per legendary level for active elements. Skyrim engine caps: 85% for Magic/Elements, 100% for Poison.",
           "id": "fBlockElementalReductionPerLevel:Combat",
           "valueOptions": {
             "min": 0.0,
@@ -137,11 +216,77 @@
           }
         },
         {
-          "type": "empty"
+          "type": "toggle",
+          "text": "Master Resistance Toggle",
+          "help": "Master switch for all passive resistances granted by Block.",
+          "id": "bEnableBlockResistMaster:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
+          "type": "text",
+          "text": "Configure individual resistance elements on the right ->"
+        },
+        {
+          "type": "toggle",
+          "text": "Enable Fire Resistance",
+          "help": "Toggle passive Fire Resistance bonus.",
+          "id": "bEnableBlockResistFire:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        {
+          "type": "toggle",
+          "text": "Enable Frost Resistance",
+          "help": "Toggle passive Frost Resistance bonus.",
+          "id": "bEnableBlockResistFrost:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        {
+          "type": "toggle",
+          "text": "Enable Shock Resistance",
+          "help": "Toggle passive Shock Resistance bonus.",
+          "id": "bEnableBlockResistShock:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        {
+          "type": "toggle",
+          "text": "Enable Poison Resistance",
+          "help": "Toggle passive Poison Resistance bonus from Block.",
+          "id": "bEnableBlockResistPoison:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        {
+          "type": "toggle",
+          "text": "Enable Magic Resistance",
+          "help": "Toggle passive Magic Resistance bonus.",
+          "id": "bEnableBlockResistMagic:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Heavy Armor Settings"
         },
         {
           "type": "header",
-          "text": "Heavy Armor"
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -154,6 +299,15 @@
             "step": 1.0,
             "formatString": "{1}%",
             "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "type": "toggle",
+          "text": "Enable Health Bonus",
+          "help": "Enable or disable percentage health scaling.",
+          "id": "bEnableHeavyArmorHealth:Attributes",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
           }
         },
         {
@@ -170,11 +324,24 @@
           }
         },
         {
-          "type": "empty"
+          "type": "toggle",
+          "text": "Enable Stagger Resistance",
+          "help": "Enable or disable mass and stagger resistance bonus.",
+          "id": "bEnableHeavyArmorMass:Attributes",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Light Armor Settings"
         },
         {
           "type": "header",
-          "text": "Light Armor"
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -190,6 +357,15 @@
           }
         },
         {
+          "type": "toggle",
+          "text": "Enable Stamina Regen",
+          "help": "Enable or disable stamina regeneration bonus.",
+          "id": "bEnableLightArmorStaminaRate:Attributes",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
           "type": "slider",
           "text": "Maximum Stamina Pool",
           "help": "Flat maximum stamina bonus per legendary level.",
@@ -201,16 +377,29 @@
             "formatString": "{0} pts",
             "sourceType": "ModSettingFloat"
           }
+        },
+        {
+          "type": "toggle",
+          "text": "Enable Stamina Pool",
+          "help": "Enable or disable flat stamina pool bonus.",
+          "id": "bEnableLightArmorStaminaPool:Attributes",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
         }
       ]
     },
     {
       "pageDisplayName": "Magic",
-      "cursorFillMode": "topToBottom",
+      "cursorFillMode": "leftToRight",
       "content": [
         {
           "type": "header",
-          "text": "Destruction"
+          "text": "Destruction Settings"
+        },
+        {
+          "type": "header",
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -226,11 +415,24 @@
           }
         },
         {
-          "type": "empty"
+          "type": "toggle",
+          "text": "Enable Destruction Bonus",
+          "help": "Enable or disable offensive spell magnitude bonus.",
+          "id": "bEnableDestructionPower:Magic",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Restoration Settings"
         },
         {
           "type": "header",
-          "text": "Restoration"
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -246,9 +448,18 @@
           }
         },
         {
+          "type": "toggle",
+          "text": "Enable Healing Bonus",
+          "help": "Enable or disable healing spell magnitude bonus.",
+          "id": "bEnableRestorationPower:Magic",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
           "type": "slider",
-          "text": "Permanent Poison Resistance",
-          "help": "Permanent poison resistance percentage per legendary level.",
+          "text": "Passive Poison Resistance",
+          "help": "Passive poison resistance percentage per legendary level.",
           "id": "fPoisonResistPerLevel:Attributes",
           "valueOptions": {
             "min": 0.0,
@@ -259,24 +470,24 @@
           }
         },
         {
-          "type": "empty"
+          "type": "toggle",
+          "text": "Enable Poison Resistance",
+          "help": "Enable or disable passive poison resistance from Restoration.",
+          "id": "bEnableRestorationPoisonResist:Attributes",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Alteration Settings"
         },
         {
           "type": "header",
-          "text": "Alteration"
-        },
-        {
-          "type": "slider",
-          "text": "Spell Absorption Chance",
-          "help": "Permanent spell absorption chance percentage per legendary level.",
-          "id": "fSpellAbsorptionPerLevel:Attributes",
-          "valueOptions": {
-            "min": 0.0,
-            "max": 100.0,
-            "step": 1.0,
-            "formatString": "{1}%",
-            "sourceType": "ModSettingFloat"
-          }
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -292,31 +503,46 @@
           }
         },
         {
-          "type": "empty"
-        },
-        {
-          "type": "header",
-          "text": "Conjuration"
+          "type": "toggle",
+          "text": "Enable Duration Bonus",
+          "help": "Enable or disable Alteration spell duration bonus.",
+          "id": "bEnableAlterationDuration:Magic",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
         },
         {
           "type": "slider",
-          "text": "Minion Damage & Health Bonus",
-          "help": "Attack damage and vitality factor for conjured minions per legendary level.",
-          "id": "fMinionDamagePerLevel:Minions",
+          "text": "Spell Absorption Chance",
+          "help": "Passive spell absorption chance percentage per legendary level.",
+          "id": "fSpellAbsorptionPerLevel:Attributes",
           "valueOptions": {
             "min": 0.0,
-            "max": 300.0,
-            "step": 5.0,
+            "max": 100.0,
+            "step": 1.0,
             "formatString": "{1}%",
             "sourceType": "ModSettingFloat"
           }
         },
         {
-          "type": "empty"
+          "type": "toggle",
+          "text": "Enable Absorption Chance",
+          "help": "Enable or disable spell absorption chance.",
+          "id": "bEnableAlterationAbsorption:Attributes",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Illusion Settings"
         },
         {
           "type": "header",
-          "text": "Illusion"
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -330,16 +556,29 @@
             "formatString": "{1}%",
             "sourceType": "ModSettingFloat"
           }
+        },
+        {
+          "type": "toggle",
+          "text": "Enable Illusion Bonus",
+          "help": "Enable or disable mind manipulation level bonus.",
+          "id": "bEnableIllusionPower:Magic",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
         }
       ]
     },
     {
       "pageDisplayName": "Specialized Skills",
-      "cursorFillMode": "topToBottom",
+      "cursorFillMode": "leftToRight",
       "content": [
         {
           "type": "header",
-          "text": "Smithing"
+          "text": "Smithing Settings"
+        },
+        {
+          "type": "header",
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -355,9 +594,18 @@
           }
         },
         {
+          "type": "toggle",
+          "text": "Enable Carry Weight",
+          "help": "Enable or disable carry weight bonus.",
+          "id": "bEnableSmithingCarryWeight:Attributes",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
           "type": "slider",
           "text": "Physical Armor Penetration",
-          "help": "Percentage physical weapon penetration and attack power bonus granted per legendary level in Smithing.",
+          "help": "Percentage physical weapon penetration bonus granted per legendary level.",
           "id": "fSmithingArmorPenPerLevel:Crafting",
           "valueOptions": {
             "min": 0.0,
@@ -368,11 +616,24 @@
           }
         },
         {
-          "type": "empty"
+          "type": "toggle",
+          "text": "Enable Penetration Bonus",
+          "help": "Enable or disable weapon penetration bonus.",
+          "id": "bEnableSmithingArmorPen:Crafting",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Alchemy Settings"
         },
         {
           "type": "header",
-          "text": "Alchemy"
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -388,15 +649,28 @@
           }
         },
         {
-          "type": "empty"
+          "type": "toggle",
+          "text": "Enable Alchemy Potency",
+          "help": "Enable or disable crafted potion and poison magnitude bonus.",
+          "id": "bEnableAlchemyPotency:Crafting",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Enchanting Settings"
         },
         {
           "type": "header",
-          "text": "Enchanting"
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
-          "text": "New Enchantment Magnitude",
+          "text": "Enchantment Magnitude",
           "help": "Strength multiplier of newly created enchantments per legendary level.",
           "id": "fEnchantingPowerPerLevel:Crafting",
           "valueOptions": {
@@ -408,9 +682,18 @@
           }
         },
         {
+          "type": "toggle",
+          "text": "Enable Enchanting Power",
+          "help": "Enable or disable enchanting strength bonus.",
+          "id": "bEnableEnchantingPower:Crafting",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
           "type": "slider",
-          "text": "Weapon Charge Conservation",
-          "help": "Percentage of weapon enchantment charge refunded on hit per legendary level.",
+          "text": "Charge Conservation",
+          "help": "Weapon enchantment charge points refunded on weapon strike per legendary level.",
           "id": "fEnchantingChargeReductionPerLevel:Crafting",
           "valueOptions": {
             "min": 0.0,
@@ -421,11 +704,24 @@
           }
         },
         {
-          "type": "empty"
+          "type": "toggle",
+          "text": "Enable Charge Refund",
+          "help": "Enable or disable enchanted weapon charge refund on hit.",
+          "id": "bEnableEnchantingChargeRefund:Crafting",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Sneak Settings"
         },
         {
           "type": "header",
-          "text": "Sneak"
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -438,6 +734,15 @@
             "step": 1.0,
             "formatString": "{1}%",
             "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "type": "toggle",
+          "text": "Enable Stealth Bonus",
+          "help": "Enable or disable sneak detection bonus.",
+          "id": "bEnableSneakEffectiveness:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
           }
         },
         {
@@ -454,11 +759,24 @@
           }
         },
         {
-          "type": "empty"
+          "type": "toggle",
+          "text": "Enable Sneak Attack Bonus",
+          "help": "Enable or disable sneak attack damage multiplier bonus.",
+          "id": "bEnableSneakAttackMult:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Lockpicking Settings"
         },
         {
           "type": "header",
-          "text": "Lockpicking"
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -474,8 +792,17 @@
           }
         },
         {
+          "type": "toggle",
+          "text": "Enable Sweet-Spot Width",
+          "help": "Enable or disable lock sweet-spot angle bonus.",
+          "id": "bEnableLockpickingWidth:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        {
           "type": "slider",
-          "text": "Bonus Gold On Lock Picked",
+          "text": "Bonus Gold On Picked Lock",
           "help": "Silent gold bounty awarded immediately upon cracking a lock per legendary level.",
           "id": "fLockpickingGoldPerLevel:Combat",
           "valueOptions": {
@@ -487,15 +814,28 @@
           }
         },
         {
-            "type": "empty"
+          "type": "toggle",
+          "text": "Enable Bonus Gold Bounty",
+          "help": "Enable or disable silent gold award on picked locks.",
+          "id": "bEnableLockpickingGold:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Pickpocket Settings"
         },
         {
           "type": "header",
-          "text": "Pickpocket"
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
-          "text": "Pickpocket Success Chance",
+          "text": "Success Chance",
           "help": "Additive pickpocket success chance percentage per legendary level.",
           "id": "fPickpocketChancePerLevel:Combat",
           "valueOptions": {
@@ -504,6 +844,15 @@
             "step": 1.0,
             "formatString": "{1}%",
             "sourceType": "ModSettingFloat"
+          }
+        },
+        {
+          "type": "toggle",
+          "text": "Enable Success Bonus",
+          "help": "Enable or disable pickpocket success chance bonus.",
+          "id": "bEnablePickpocketChance:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
           }
         },
         {
@@ -520,11 +869,24 @@
           }
         },
         {
-          "type": "empty"
+          "type": "toggle",
+          "text": "Enable Bonus Gold Bounty",
+          "help": "Enable or disable silent gold award on pickpocketing.",
+          "id": "bEnablePickpocketGold:Combat",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
+        },
+        { "type": "empty" },
+        { "type": "empty" },
+
+        {
+          "type": "header",
+          "text": "Speech Settings"
         },
         {
           "type": "header",
-          "text": "Speech"
+          "text": "Feature Toggles"
         },
         {
           "type": "slider",
@@ -538,51 +900,62 @@
             "formatString": "{1}%",
             "sourceType": "ModSettingFloat"
           }
+        },
+        {
+          "type": "toggle",
+          "text": "Enable Barter Bonus",
+          "help": "Enable or disable vendor buying and selling price bonus.",
+          "id": "bEnableSpeechBarter:Crafting",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
         }
       ]
     },
     {
       "pageDisplayName": "Misc",
-      "cursorFillMode": "topToBottom",
+      "cursorFillMode": "leftToRight",
       "content": [
         {
           "type": "header",
           "text": "Diagnostics & Maintenance"
         },
         {
+          "type": "header",
+          "text": "Architecture Details"
+        },
+        {
           "type": "toggle",
           "text": "Verbose SKSE Logging",
-          "help": "Enables granular debug messages in LegendarySkillTraits.log.",
+          "help": "Enables detailed debug traces in LegendarySkillTraits.log.",
           "id": "bVerboseLogging:Diagnostics",
           "valueOptions": {
             "sourceType": "ModSettingBool"
           }
         },
         {
-          "type": "empty"
-        },
-        {
-          "type": "header",
-          "text": "Plugin Architecture"
-        },
-        {
           "type": "text",
           "text": "Architecture: Pure C++ CommonLibSSE-NG"
         },
+        { "type": "empty" },
         {
           "type": "text",
           "text": "Load Order Impact: 0 Slots (ESL / ESPFE)"
         },
+        { "type": "empty" },
         {
           "type": "text",
-          "text": "Target Engine: Skyrim SE / AE 1.7.104+"
+          "text": "Engine: Skyrim SE / AE 1.7.104+"
         },
-        {
-          "type": "empty"
-        },
+        { "type": "empty" },
         {
           "type": "text",
-          "text": "Changes apply immediately upon closing the pause menu."
+          "text": "Safe to install or uninstall mid-game."
+        },
+        { "type": "empty" },
+        {
+          "type": "text",
+          "text": "Changes apply immediately upon unpausing."
         }
       ]
     }

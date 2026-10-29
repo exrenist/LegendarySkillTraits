@@ -2,10 +2,12 @@
 #include "Traits.h"
 #include <fstream>
 #include <filesystem>
+#include <string>
 
 namespace SettingsManager
 {
-    inline const std::filesystem::path kConfigPath = "Data/MCM/Settings/LegendarySkillTraits.ini";
+    inline const std::filesystem::path kUserConfigPath = "Data/MCM/Settings/LegendarySkillTraits.ini";
+    inline const std::filesystem::path kDefaultConfigPath = "Data/MCM/Config/LegendarySkillTraits/settings.ini";
 
     inline std::string Trim(const std::string& str)
     {
@@ -15,20 +17,30 @@ namespace SettingsManager
         return str.substr(first, (last - first + 1));
     }
 
+    inline bool ParseBoolValue(const std::string& str, float numVal)
+    {
+        if (str == "1" || str == "true" || str == "TRUE" || str == "True") return true;
+        if (str == "0" || str == "false" || str == "FALSE" || str == "False") return false;
+        return numVal != 0.0f;
+    }
+
     inline void LoadSettings()
     {
-        if (!std::filesystem::exists(kConfigPath)) {
-            SKSE::log::info("Config file '{}' not found yet. Using default trait values.", kConfigPath.string());
+        // Check if user has generated customized settings from MCM, otherwise fall back to default template
+        const std::filesystem::path activePath = std::filesystem::exists(kUserConfigPath) ? kUserConfigPath : kDefaultConfigPath;
+
+        if (!std::filesystem::exists(activePath)) {
+            SKSE::log::info("No configuration file found. Using hardcoded trait defaults.");
             return;
         }
 
-        std::ifstream file(kConfigPath);
+        std::ifstream file(activePath);
         if (!file.is_open()) {
-            SKSE::log::warn("Failed to open config file: {}", kConfigPath.string());
+            SKSE::log::warn("Failed to open configuration file: {}", activePath.string());
             return;
         }
 
-        SKSE::log::info("Loading configuration from '{}'...", kConfigPath.string());
+        SKSE::log::info("Loading configuration from '{}'...", activePath.string());
 
         std::string line;
         while (std::getline(file, line)) {
@@ -47,6 +59,7 @@ namespace SettingsManager
 
             try {
                 const float val = std::stof(valStr);
+                const bool boolVal = ParseBoolValue(valStr, val);
 
                 // Combat & Weapon Math
                 if (key == "fOneHandedDamagePerLevel") LegendaryTraits::g_settings.oneHandedDamagePerLevel = val;
@@ -86,9 +99,54 @@ namespace SettingsManager
                 else if (key == "fPoisonResistPerLevel") LegendaryTraits::g_settings.poisonResistPerLevel = val;
                 else if (key == "fSpellAbsorptionPerLevel") LegendaryTraits::g_settings.spellAbsorptionPerLevel = val;
 
+                // Feature Toggles (Combat)
+                else if (key == "bEnableOneHandedDamage") LegendaryTraits::g_settings.enableOneHandedDamage = boolVal;
+                else if (key == "bEnableOneHandedCrit") LegendaryTraits::g_settings.enableOneHandedCrit = boolVal;
+                else if (key == "bEnableTwoHandedDamage") LegendaryTraits::g_settings.enableTwoHandedDamage = boolVal;
+                else if (key == "bEnableTwoHandedCrit") LegendaryTraits::g_settings.enableTwoHandedCrit = boolVal;
+                else if (key == "bEnableArcheryDamage") LegendaryTraits::g_settings.enableArcheryDamage = boolVal;
+                else if (key == "bEnableArcheryCrit") LegendaryTraits::g_settings.enableArcheryCrit = boolVal;
+                else if (key == "bEnableArcheryStagger") LegendaryTraits::g_settings.enableArcheryStagger = boolVal;
+
+                // Feature Toggles (Block & Resistances)
+                else if (key == "bEnableBlockResistMaster") LegendaryTraits::g_settings.enableBlockResistMaster = boolVal;
+                else if (key == "bEnableBlockResistFire") LegendaryTraits::g_settings.enableBlockResistFire = boolVal;
+                else if (key == "bEnableBlockResistFrost") LegendaryTraits::g_settings.enableBlockResistFrost = boolVal;
+                else if (key == "bEnableBlockResistShock") LegendaryTraits::g_settings.enableBlockResistShock = boolVal;
+                else if (key == "bEnableBlockResistPoison") LegendaryTraits::g_settings.enableBlockResistPoison = boolVal;
+                else if (key == "bEnableBlockResistMagic") LegendaryTraits::g_settings.enableBlockResistMagic = boolVal;
+
+                // Feature Toggles (Armor & Attributes)
+                else if (key == "bEnableHeavyArmorHealth") LegendaryTraits::g_settings.enableHeavyArmorHealth = boolVal;
+                else if (key == "bEnableHeavyArmorMass") LegendaryTraits::g_settings.enableHeavyArmorMass = boolVal;
+                else if (key == "bEnableLightArmorStaminaRate") LegendaryTraits::g_settings.enableLightArmorStaminaRate = boolVal;
+                else if (key == "bEnableLightArmorStaminaPool") LegendaryTraits::g_settings.enableLightArmorStaminaPool = boolVal;
+
+                // Feature Toggles (Magic)
+                else if (key == "bEnableDestructionPower") LegendaryTraits::g_settings.enableDestructionPower = boolVal;
+                else if (key == "bEnableRestorationPower") LegendaryTraits::g_settings.enableRestorationPower = boolVal;
+                else if (key == "bEnableRestorationPoisonResist") LegendaryTraits::g_settings.enableRestorationPoisonResist = boolVal;
+                else if (key == "bEnableAlterationDuration") LegendaryTraits::g_settings.enableAlterationDuration = boolVal;
+                else if (key == "bEnableAlterationAbsorption") LegendaryTraits::g_settings.enableAlterationAbsorption = boolVal;
+                else if (key == "bEnableIllusionPower") LegendaryTraits::g_settings.enableIllusionPower = boolVal;
+
+                // Feature Toggles (Crafting & Stealth)
+                else if (key == "bEnableSmithingCarryWeight") LegendaryTraits::g_settings.enableSmithingCarryWeight = boolVal;
+                else if (key == "bEnableSmithingArmorPen") LegendaryTraits::g_settings.enableSmithingArmorPen = boolVal;
+                else if (key == "bEnableAlchemyPotency") LegendaryTraits::g_settings.enableAlchemyPotency = boolVal;
+                else if (key == "bEnableEnchantingPower") LegendaryTraits::g_settings.enableEnchantingPower = boolVal;
+                else if (key == "bEnableEnchantingChargeRefund") LegendaryTraits::g_settings.enableEnchantingChargeRefund = boolVal;
+                else if (key == "bEnableSneakEffectiveness") LegendaryTraits::g_settings.enableSneakEffectiveness = boolVal;
+                else if (key == "bEnableSneakAttackMult") LegendaryTraits::g_settings.enableSneakAttackMult = boolVal;
+                else if (key == "bEnableLockpickingWidth") LegendaryTraits::g_settings.enableLockpickingWidth = boolVal;
+                else if (key == "bEnableLockpickingGold") LegendaryTraits::g_settings.enableLockpickingGold = boolVal;
+                else if (key == "bEnablePickpocketChance") LegendaryTraits::g_settings.enablePickpocketChance = boolVal;
+                else if (key == "bEnablePickpocketGold") LegendaryTraits::g_settings.enablePickpocketGold = boolVal;
+                else if (key == "bEnableSpeechBarter") LegendaryTraits::g_settings.enableSpeechBarter = boolVal;
+
                 // Diagnostics
                 else if (key == "bVerboseLogging") {
-                    LegendaryTraits::g_settings.verboseLogging = (val != 0.0f);
+                    LegendaryTraits::g_settings.verboseLogging = boolVal;
                 }
             } catch (...) {
             }
@@ -96,7 +154,7 @@ namespace SettingsManager
 
         SKSE::log::info("Configuration applied successfully.");
     }
-}
+} // namespace SettingsManager
 
 namespace LegendaryTraits
 {
@@ -146,7 +204,7 @@ namespace LegendaryTraits
             }
         }
     };
-}
+} // namespace LegendaryTraits
 
 void SetupLog()
 {
