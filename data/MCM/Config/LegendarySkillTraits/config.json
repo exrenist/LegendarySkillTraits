@@ -460,7 +460,7 @@
           "type": "slider",
           "text": "Passive Poison Resistance",
           "help": "Passive poison resistance percentage per legendary level.",
-          "id": "fPoisonResistPerLevel:Attributes",
+          "id": "fPoisonResistPerLevel:Magic",
           "valueOptions": {
             "min": 0.0,
             "max": 100.0,
@@ -473,7 +473,7 @@
           "type": "toggle",
           "text": "Enable Poison Resistance",
           "help": "Enable or disable passive poison resistance from Restoration.",
-          "id": "bEnableRestorationPoisonResist:Attributes",
+          "id": "bEnableRestorationPoisonResist:Magic",
           "valueOptions": {
             "sourceType": "ModSettingBool"
           }
@@ -515,7 +515,7 @@
           "type": "slider",
           "text": "Spell Absorption Chance",
           "help": "Passive spell absorption chance percentage per legendary level.",
-          "id": "fSpellAbsorptionPerLevel:Attributes",
+          "id": "fSpellAbsorptionPerLevel:Magic",
           "valueOptions": {
             "min": 0.0,
             "max": 100.0,
@@ -528,7 +528,7 @@
           "type": "toggle",
           "text": "Enable Absorption Chance",
           "help": "Enable or disable spell absorption chance.",
-          "id": "bEnableAlterationAbsorption:Attributes",
+          "id": "bEnableAlterationAbsorption:Magic",
           "valueOptions": {
             "sourceType": "ModSettingBool"
           }
@@ -584,7 +584,7 @@
           "type": "slider",
           "text": "Carry Weight Bonus",
           "help": "Flat permanent carry weight bonus per legendary level.",
-          "id": "fCarryWeightPerLevel:Attributes",
+          "id": "fCarryWeightPerLevel:Crafting",
           "valueOptions": {
             "min": 0.0,
             "max": 500.0,
@@ -597,7 +597,7 @@
           "type": "toggle",
           "text": "Enable Carry Weight",
           "help": "Enable or disable carry weight bonus.",
-          "id": "bEnableSmithingCarryWeight:Attributes",
+          "id": "bEnableSmithingCarryWeight:Crafting",
           "valueOptions": {
             "sourceType": "ModSettingBool"
           }
@@ -698,8 +698,8 @@
           "valueOptions": {
             "min": 0.0,
             "max": 100.0,
-            "step": 1.0,
-            "formatString": "{1}%",
+            "step": 0.5,
+            "formatString": "{1} pts",
             "sourceType": "ModSettingFloat"
           }
         },
@@ -918,11 +918,20 @@
       "content": [
         {
           "type": "header",
-          "text": "Diagnostics & Maintenance"
+          "text": "Interface & Display"
         },
         {
           "type": "header",
-          "text": "Architecture Details"
+          "text": "Diagnostics"
+        },
+        {
+          "type": "toggle",
+          "text": "Show Traits in Active Effects",
+          "help": "Display your earned legendary passive traits in the Magic -> Active Effects menu. Disable to prevent HUD/menu clutter on heavy modlists.",
+          "id": "bShowInActiveEffects:Diagnostics",
+          "valueOptions": {
+            "sourceType": "ModSettingBool"
+          }
         },
         {
           "type": "toggle",
@@ -933,6 +942,13 @@
             "sourceType": "ModSettingBool"
           }
         },
+        { "type": "empty" },
+        { "type": "empty" },
+        {
+          "type": "header",
+          "text": "Architecture Details"
+        },
+        { "type": "empty" },
         {
           "type": "text",
           "text": "Architecture: Pure C++ CommonLibSSE-NG"

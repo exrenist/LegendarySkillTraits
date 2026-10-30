@@ -33,11 +33,33 @@ namespace LegendaryTraits
         "Enchanting"     // 17
     };
 
+    // ESL FormIDs matching exactly with LegendarySkillTraits.esl tree
+    inline constexpr std::array<RE::FormID, kSkillCount> kTraitSpellIDs = {
+        0x804, // 0: One-Handed   (FE000804)
+        0x805, // 1: Two-Handed   (FE000805)
+        0x806, // 2: Archery      (FE000806)
+        0x807, // 3: Block        (FE000807)
+        0x80F, // 4: Smithing     (FE00080F)
+        0x808, // 5: Heavy Armor  (FE000808)
+        0x809, // 6: Light Armor  (FE000809)
+        0x814, // 7: Pickpocket   (FE000814)
+        0x813, // 8: Lockpicking  (FE000813)
+        0x812, // 9: Sneak        (FE000812)
+        0x810, // 10: Alchemy     (FE000810)
+        0x815, // 11: Speech      (FE000815)
+        0x80C, // 12: Alteration  (FE00080C)
+        0x80E, // 13: Conjuration (FE00080E)
+        0x80A, // 14: Destruction (FE00080A)
+        0x80D, // 15: Illusion    (FE00080D)
+        0x80B, // 16: Restoration (FE00080B)
+        0x811  // 17: Enchanting  (FE000811)
+    };
+
+    inline std::array<RE::SpellItem*, kSkillCount> g_traitSpells{};
+
     struct TraitSettings
     {
-        // -------------------------------------------------------------
         // Magnitudes & Factors
-        // -------------------------------------------------------------
         float oneHandedDamagePerLevel = 8.0f;
         float oneHandedCritPerLevel = 4.0f;
         float twoHandedDamagePerLevel = 10.0f;
@@ -72,10 +94,7 @@ namespace LegendaryTraits
         float poisonResistPerLevel = 10.0f;
         float spellAbsorptionPerLevel = 3.0f;
 
-        // -------------------------------------------------------------
-        // Feature Toggles
-        // -------------------------------------------------------------
-        // Combat: One-Handed, Two-Handed, Archery
+        // Feature Toggles (Combat)
         bool enableOneHandedDamage = true;
         bool enableOneHandedCrit = true;
         bool enableTwoHandedDamage = true;
@@ -84,7 +103,7 @@ namespace LegendaryTraits
         bool enableArcheryCrit = true;
         bool enableArcheryStagger = true;
 
-        // Block & Resistances (Master + Individual)
+        // Feature Toggles (Block & Resistances)
         bool enableBlockResistMaster = true;
         bool enableBlockResistFire = true;
         bool enableBlockResistFrost = true;
@@ -92,13 +111,13 @@ namespace LegendaryTraits
         bool enableBlockResistPoison = true;
         bool enableBlockResistMagic = true;
 
-        // Heavy & Light Armor
+        // Feature Toggles (Armor & Attributes)
         bool enableHeavyArmorHealth = true;
         bool enableHeavyArmorMass = true;
         bool enableLightArmorStaminaRate = true;
         bool enableLightArmorStaminaPool = true;
 
-        // Magic Skills
+        // Feature Toggles (Magic)
         bool enableDestructionPower = true;
         bool enableRestorationPower = true;
         bool enableRestorationPoisonResist = true;
@@ -106,7 +125,7 @@ namespace LegendaryTraits
         bool enableAlterationAbsorption = true;
         bool enableIllusionPower = true;
 
-        // Crafting & Thievery Skills
+        // Feature Toggles (Crafting & Stealth)
         bool enableSmithingCarryWeight = true;
         bool enableSmithingArmorPen = true;
         bool enableAlchemyPotency = true;
@@ -120,7 +139,8 @@ namespace LegendaryTraits
         bool enablePickpocketGold = true;
         bool enableSpeechBarter = true;
 
-        // Diagnostics
+        // Active Effects & Logging
+        bool showInActiveEffects = true;
         bool verboseLogging = false;
     };
 
@@ -142,7 +162,6 @@ namespace LegendaryTraits
         float smithingPenetration = 0.0f;
         float criticalChance = 0.0f;
 
-        // Individual Block Resistances
         float blockFireResist = 0.0f;
         float blockFrostResist = 0.0f;
         float blockShockResist = 0.0f;
@@ -150,7 +169,6 @@ namespace LegendaryTraits
         float blockMagicResist = 0.0f;
 
         float sneakAttackMult = 0.0f;
-
         float destructionPower = 0.0f;
         float restorationPower = 0.0f;
         float illusionPower = 0.0f;
@@ -181,6 +199,59 @@ namespace LegendaryTraits
 
         for (std::size_t i = 0; i < kSkillCount; ++i) {
             g_legendaryCounts[i] = playerSkills->data->legendaryLevels[i];
+        }
+    }
+
+    inline void SanitizeSpellEffects(RE::SpellItem* a_spell)
+    {
+        if (!a_spell) return;
+        for (auto* effect : a_spell->effects) {
+            if (effect) {
+                effect->effectItem.duration = 0;
+                effect->effectItem.area = 0;
+                effect->effectItem.magnitude = 0.0f;
+            }
+        }
+    }
+
+    inline void InitializeSpellCache()
+    {
+        const auto dataHandler = RE::TESDataHandler::GetSingleton();
+        if (!dataHandler) return;
+
+        constexpr auto modName = "LegendarySkillTraits.esl";
+        for (std::size_t i = 0; i < kSkillCount; ++i) {
+            g_traitSpells[i] = dataHandler->LookupForm<RE::SpellItem>(kTraitSpellIDs[i], modName);
+            if (!g_traitSpells[i]) {
+                SKSE::log::warn("Trait spell 0x{:X} not found in {}", kTraitSpellIDs[i], modName);
+            } else {
+                SanitizeSpellEffects(g_traitSpells[i]);
+            }
+        }
+    }
+
+    inline bool IsSkillTraitEnabled(std::size_t a_skillIndex)
+    {
+        switch (a_skillIndex) {
+        case 0: return g_settings.enableOneHandedDamage || g_settings.enableOneHandedCrit;
+        case 1: return g_settings.enableTwoHandedDamage || g_settings.enableTwoHandedCrit;
+        case 2: return g_settings.enableArcheryDamage || g_settings.enableArcheryCrit || g_settings.enableArcheryStagger;
+        case 3: return g_settings.enableBlockResistMaster && (g_settings.enableBlockResistFire || g_settings.enableBlockResistFrost || g_settings.enableBlockResistShock || g_settings.enableBlockResistPoison || g_settings.enableBlockResistMagic);
+        case 4: return g_settings.enableSmithingCarryWeight || g_settings.enableSmithingArmorPen;
+        case 5: return g_settings.enableHeavyArmorHealth || g_settings.enableHeavyArmorMass;
+        case 6: return g_settings.enableLightArmorStaminaRate || g_settings.enableLightArmorStaminaPool;
+        case 7: return g_settings.enablePickpocketChance || g_settings.enablePickpocketGold;
+        case 8: return g_settings.enableLockpickingWidth || g_settings.enableLockpickingGold;
+        case 9: return g_settings.enableSneakEffectiveness || g_settings.enableSneakAttackMult;
+        case 10: return g_settings.enableAlchemyPotency;
+        case 11: return g_settings.enableSpeechBarter;
+        case 12: return g_settings.enableAlterationDuration || g_settings.enableAlterationAbsorption;
+        case 13: return true;
+        case 14: return g_settings.enableDestructionPower;
+        case 15: return g_settings.enableIllusionPower;
+        case 16: return g_settings.enableRestorationPower || g_settings.enableRestorationPoisonResist;
+        case 17: return g_settings.enableEnchantingPower || g_settings.enableEnchantingChargeRefund;
+        default: return true;
         }
     }
 
@@ -244,7 +315,6 @@ namespace LegendaryTraits
             g_appliedMods.criticalChance = 0.0f;
         }
 
-        // Revert Individual Block Resistances cleanly
         if (g_appliedMods.blockFireResist > 0.0f) {
             avOwner->ModActorValue(modifier, RE::ActorValue::kResistFire, -g_appliedMods.blockFireResist);
             g_appliedMods.blockFireResist = 0.0f;
@@ -313,6 +383,35 @@ namespace LegendaryTraits
         if (g_appliedMods.enchantingModifier > 0.0f) {
             avOwner->ModActorValue(modifier, RE::ActorValue::kEnchantingModifier, -g_appliedMods.enchantingModifier);
             g_appliedMods.enchantingModifier = 0.0f;
+        }
+    }
+
+    inline void UpdateActiveEffectSpells(RE::PlayerCharacter* a_player)
+    {
+        if (!a_player) return;
+
+        for (std::size_t i = 0; i < kSkillCount; ++i) {
+            const auto spell = g_traitSpells[i];
+            if (!spell) {
+                continue;
+            }
+
+            const bool hasSpell = a_player->HasSpell(spell);
+            const bool isEnabled = IsSkillTraitEnabled(i);
+            const bool shouldHaveSpell = g_settings.showInActiveEffects && isEnabled && (g_legendaryCounts[i] > 0);
+
+            if (shouldHaveSpell && !hasSpell) {
+                SanitizeSpellEffects(spell);
+                a_player->AddSpell(spell);
+                if (g_settings.verboseLogging) {
+                    SKSE::log::info("Active Effects: Added trait spell for {}", kSkillNames[i]);
+                }
+            } else if (!shouldHaveSpell && hasSpell) {
+                a_player->RemoveSpell(spell);
+                if (g_settings.verboseLogging) {
+                    SKSE::log::info("Active Effects: Removed trait spell for {}", kSkillNames[i]);
+                }
+            }
         }
     }
 
@@ -397,7 +496,7 @@ namespace LegendaryTraits
             }
         }
 
-        // 4. Restoration (Passive Poison Resist)
+        // 4. Restoration
         const auto restorationLevel = g_legendaryCounts[16];
         if (restorationLevel > 0 && g_settings.enableRestorationPoisonResist) {
             anyTraitApplied = true;
@@ -407,7 +506,7 @@ namespace LegendaryTraits
             SKSE::log::info("Restoration (Legendary {}): +{:.1f}% Poison Resistance", restorationLevel, bonus);
         }
 
-        // 5. Alteration (Spell Absorption)
+        // 5. Alteration
         const auto alterationLevel = g_legendaryCounts[12];
         if (alterationLevel > 0 && g_settings.enableAlterationAbsorption) {
             anyTraitApplied = true;
@@ -469,7 +568,7 @@ namespace LegendaryTraits
             SKSE::log::info("Combat Critical Chance: Total +{:.1f}%", totalCritChanceBonus);
         }
 
-        // Block: Passive Elemental, Magic & Poison Resistance (Master & Individual Toggles)
+        // Block
         const auto blockLevel = g_legendaryCounts[3];
         if (blockLevel > 0 && g_settings.enableBlockResistMaster) {
             const float resistAmount = static_cast<float>(blockLevel) * g_settings.blockElementalReductionPerLevel;
@@ -522,7 +621,7 @@ namespace LegendaryTraits
             }
         }
 
-        // 7. Magic Powers
+        // Magic Powers
         const auto destructionLevel = g_legendaryCounts[14];
         if (destructionLevel > 0 && g_settings.enableDestructionPower) {
             anyTraitApplied = true;
@@ -563,7 +662,7 @@ namespace LegendaryTraits
             SKSE::log::info("Conjuration (Legendary {}): Active", conjurationLevel);
         }
 
-        // 8. Thievery & Barter
+        // Thievery & Barter
         const auto pickpocketLevel = g_legendaryCounts[7];
         if (pickpocketLevel > 0 && g_settings.enablePickpocketChance) {
             anyTraitApplied = true;
@@ -591,7 +690,7 @@ namespace LegendaryTraits
             SKSE::log::info("Speech (Legendary {}): +{:.1f}% Barter Prices", speechLevel, bonus);
         }
 
-        // 9. Crafting Potencies
+        // Crafting Potencies
         const auto alchemyLevel = g_legendaryCounts[10];
         if (alchemyLevel > 0 && g_settings.enableAlchemyPotency) {
             anyTraitApplied = true;
@@ -615,6 +714,9 @@ namespace LegendaryTraits
         } else {
             SKSE::log::info("All enabled traits applied successfully to Player.");
         }
+
+        // Synchronize Active Effects display spells
+        UpdateActiveEffectSpells(player);
     }
 
     class ThieveryEventHandler : public RE::BSTEventSink<RE::TESTrackedStatsEvent>
@@ -694,7 +796,6 @@ namespace LegendaryTraits
                 const auto sourceForm = a_event->source ? RE::TESForm::LookupByID(a_event->source) : nullptr;
                 if (!sourceForm) return RE::BSEventNotifyControl::kContinue;
 
-                // Archery stagger toggle check
                 if (g_settings.enableArcheryStagger) {
                     const auto archeryLevel = g_legendaryCounts[2];
                     if (archeryLevel > 0) {
@@ -716,7 +817,6 @@ namespace LegendaryTraits
                     }
                 }
 
-                // Enchanting charge conservation toggle check
                 if (g_settings.enableEnchantingChargeRefund) {
                     const auto enchantingLevel = g_legendaryCounts[17];
                     if (enchantingLevel > 0 && sourceForm->IsWeapon()) {

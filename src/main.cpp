@@ -17,16 +17,24 @@ namespace SettingsManager
         return str.substr(first, (last - first + 1));
     }
 
-    inline bool ParseBoolValue(const std::string& str, float numVal)
+    inline bool ParseBoolValue(const std::string& str)
     {
         if (str == "1" || str == "true" || str == "TRUE" || str == "True") return true;
         if (str == "0" || str == "false" || str == "FALSE" || str == "False") return false;
-        return numVal != 0.0f;
+        return false;
+    }
+
+    inline float ParseFloatValue(const std::string& str)
+    {
+        try {
+            return std::stof(str);
+        } catch (...) {
+            return 0.0f;
+        }
     }
 
     inline void LoadSettings()
     {
-        // Check if user has generated customized settings from MCM, otherwise fall back to default template
         const std::filesystem::path activePath = std::filesystem::exists(kUserConfigPath) ? kUserConfigPath : kDefaultConfigPath;
 
         if (!std::filesystem::exists(activePath)) {
@@ -57,98 +65,98 @@ namespace SettingsManager
             const auto key = Trim(line.substr(0, delimiterPos));
             const auto valStr = Trim(line.substr(delimiterPos + 1));
 
-            try {
-                const float val = std::stof(valStr);
-                const bool boolVal = ParseBoolValue(valStr, val);
+            const bool boolVal = ParseBoolValue(valStr);
+            const float val = ParseFloatValue(valStr);
 
-                // Combat & Weapon Math
-                if (key == "fOneHandedDamagePerLevel") LegendaryTraits::g_settings.oneHandedDamagePerLevel = val;
-                else if (key == "fOneHandedCritPerLevel") LegendaryTraits::g_settings.oneHandedCritPerLevel = val;
-                else if (key == "fTwoHandedDamagePerLevel") LegendaryTraits::g_settings.twoHandedDamagePerLevel = val;
-                else if (key == "fTwoHandedCritPerLevel") LegendaryTraits::g_settings.twoHandedCritPerLevel = val;
-                else if (key == "fArcheryDamagePerLevel") LegendaryTraits::g_settings.archeryDamagePerLevel = val;
-                else if (key == "fArcheryCritPerLevel") LegendaryTraits::g_settings.archeryCritPerLevel = val;
-                else if (key == "fArcheryStaggerPerLevel") LegendaryTraits::g_settings.archeryStaggerPerLevel = val;
-                else if (key == "fBlockElementalReductionPerLevel") LegendaryTraits::g_settings.blockElementalReductionPerLevel = val;
-                else if (key == "fSneakEffectivenessPerLevel") LegendaryTraits::g_settings.sneakEffectivenessPerLevel = val;
-                else if (key == "fSneakAttackMultPerLevel") LegendaryTraits::g_settings.sneakAttackMultPerLevel = val;
-                else if (key == "fLockpickingWidthPerLevel") LegendaryTraits::g_settings.lockpickingWidthPerLevel = val;
-                else if (key == "fLockpickingGoldPerLevel") LegendaryTraits::g_settings.lockpickingGoldPerLevel = static_cast<std::int32_t>(val);
-                else if (key == "fPickpocketChancePerLevel") LegendaryTraits::g_settings.pickpocketChancePerLevel = val;
-                else if (key == "fPickpocketGoldPerLevel") LegendaryTraits::g_settings.pickpocketGoldPerLevel = static_cast<std::int32_t>(val);
+            // Combat & Weapon Math
+            if (key == "fOneHandedDamagePerLevel") LegendaryTraits::g_settings.oneHandedDamagePerLevel = val;
+            else if (key == "fOneHandedCritPerLevel") LegendaryTraits::g_settings.oneHandedCritPerLevel = val;
+            else if (key == "fTwoHandedDamagePerLevel") LegendaryTraits::g_settings.twoHandedDamagePerLevel = val;
+            else if (key == "fTwoHandedCritPerLevel") LegendaryTraits::g_settings.twoHandedCritPerLevel = val;
+            else if (key == "fArcheryDamagePerLevel") LegendaryTraits::g_settings.archeryDamagePerLevel = val;
+            else if (key == "fArcheryCritPerLevel") LegendaryTraits::g_settings.archeryCritPerLevel = val;
+            else if (key == "fArcheryStaggerPerLevel") LegendaryTraits::g_settings.archeryStaggerPerLevel = val;
+            else if (key == "fBlockElementalReductionPerLevel") LegendaryTraits::g_settings.blockElementalReductionPerLevel = val;
+            else if (key == "fSneakEffectivenessPerLevel") LegendaryTraits::g_settings.sneakEffectivenessPerLevel = val;
+            else if (key == "fSneakAttackMultPerLevel") LegendaryTraits::g_settings.sneakAttackMultPerLevel = val;
+            else if (key == "fLockpickingWidthPerLevel") LegendaryTraits::g_settings.lockpickingWidthPerLevel = val;
+            else if (key == "fLockpickingGoldPerLevel") LegendaryTraits::g_settings.lockpickingGoldPerLevel = static_cast<std::int32_t>(val);
+            else if (key == "fPickpocketChancePerLevel") LegendaryTraits::g_settings.pickpocketChancePerLevel = val;
+            else if (key == "fPickpocketGoldPerLevel") LegendaryTraits::g_settings.pickpocketGoldPerLevel = static_cast<std::int32_t>(val);
 
-                // Magic Magnitudes & Durations
-                else if (key == "fDestructionPowerPerLevel") LegendaryTraits::g_settings.destructionPowerPerLevel = val;
-                else if (key == "fRestorationPowerPerLevel") LegendaryTraits::g_settings.restorationPowerPerLevel = val;
-                else if (key == "fAlterationDurationPerLevel") LegendaryTraits::g_settings.alterationDurationPerLevel = val;
-                else if (key == "fIllusionPowerPerLevel") LegendaryTraits::g_settings.illusionPowerPerLevel = val;
+            // Magic Magnitudes & Durations
+            else if (key == "fDestructionPowerPerLevel") LegendaryTraits::g_settings.destructionPowerPerLevel = val;
+            else if (key == "fRestorationPowerPerLevel") LegendaryTraits::g_settings.restorationPowerPerLevel = val;
+            else if (key == "fAlterationDurationPerLevel") LegendaryTraits::g_settings.alterationDurationPerLevel = val;
+            else if (key == "fIllusionPowerPerLevel") LegendaryTraits::g_settings.illusionPowerPerLevel = val;
 
-                // Crafting & Barter
-                else if (key == "fVendorPriceBonusPerLevel") LegendaryTraits::g_settings.vendorPriceBonusPerLevel = val;
-                else if (key == "fSmithingArmorPenPerLevel") LegendaryTraits::g_settings.smithingArmorPenPerLevel = val;
-                else if (key == "fAlchemyPotencyPerLevel") LegendaryTraits::g_settings.alchemyPotencyPerLevel = val;
-                else if (key == "fEnchantingPowerPerLevel") LegendaryTraits::g_settings.enchantingPowerPerLevel = val;
-                else if (key == "fEnchantingChargeReductionPerLevel") LegendaryTraits::g_settings.enchantingChargeReductionPerLevel = (val / 100.0f) * 10.0f;
+            // Crafting & Barter
+            else if (key == "fVendorPriceBonusPerLevel") LegendaryTraits::g_settings.vendorPriceBonusPerLevel = val;
+            else if (key == "fSmithingArmorPenPerLevel") LegendaryTraits::g_settings.smithingArmorPenPerLevel = val;
+            else if (key == "fAlchemyPotencyPerLevel") LegendaryTraits::g_settings.alchemyPotencyPerLevel = val;
+            else if (key == "fEnchantingPowerPerLevel") LegendaryTraits::g_settings.enchantingPowerPerLevel = val;
+            else if (key == "fEnchantingChargeReductionPerLevel") LegendaryTraits::g_settings.enchantingChargeReductionPerLevel = val;
 
-                // Core Character Attributes
-                else if (key == "fHealthPercentPerLevel") LegendaryTraits::g_settings.healthPercentPerLevel = val / 100.0f;
-                else if (key == "fStaggerResistPerLevel") LegendaryTraits::g_settings.staggerResistPerLevel = val / 100.0f;
-                else if (key == "fStaminaRatePerLevel") LegendaryTraits::g_settings.staminaRatePerLevel = val;
-                else if (key == "fLightArmorStaminaBonusPerLevel") LegendaryTraits::g_settings.lightArmorStaminaBonusPerLevel = val;
-                else if (key == "fCarryWeightPerLevel") LegendaryTraits::g_settings.carryWeightPerLevel = val;
-                else if (key == "fPoisonResistPerLevel") LegendaryTraits::g_settings.poisonResistPerLevel = val;
-                else if (key == "fSpellAbsorptionPerLevel") LegendaryTraits::g_settings.spellAbsorptionPerLevel = val;
+            // Core Character Attributes
+            else if (key == "fHealthPercentPerLevel") LegendaryTraits::g_settings.healthPercentPerLevel = val / 100.0f;
+            else if (key == "fStaggerResistPerLevel") LegendaryTraits::g_settings.staggerResistPerLevel = val / 100.0f;
+            else if (key == "fStaminaRatePerLevel") LegendaryTraits::g_settings.staminaRatePerLevel = val;
+            else if (key == "fLightArmorStaminaBonusPerLevel") LegendaryTraits::g_settings.lightArmorStaminaBonusPerLevel = val;
+            else if (key == "fCarryWeightPerLevel") LegendaryTraits::g_settings.carryWeightPerLevel = val;
+            else if (key == "fPoisonResistPerLevel") LegendaryTraits::g_settings.poisonResistPerLevel = val;
+            else if (key == "fSpellAbsorptionPerLevel") LegendaryTraits::g_settings.spellAbsorptionPerLevel = val;
 
-                // Feature Toggles (Combat)
-                else if (key == "bEnableOneHandedDamage") LegendaryTraits::g_settings.enableOneHandedDamage = boolVal;
-                else if (key == "bEnableOneHandedCrit") LegendaryTraits::g_settings.enableOneHandedCrit = boolVal;
-                else if (key == "bEnableTwoHandedDamage") LegendaryTraits::g_settings.enableTwoHandedDamage = boolVal;
-                else if (key == "bEnableTwoHandedCrit") LegendaryTraits::g_settings.enableTwoHandedCrit = boolVal;
-                else if (key == "bEnableArcheryDamage") LegendaryTraits::g_settings.enableArcheryDamage = boolVal;
-                else if (key == "bEnableArcheryCrit") LegendaryTraits::g_settings.enableArcheryCrit = boolVal;
-                else if (key == "bEnableArcheryStagger") LegendaryTraits::g_settings.enableArcheryStagger = boolVal;
+            // Feature Toggles (Combat)
+            else if (key == "bEnableOneHandedDamage") LegendaryTraits::g_settings.enableOneHandedDamage = boolVal;
+            else if (key == "bEnableOneHandedCrit") LegendaryTraits::g_settings.enableOneHandedCrit = boolVal;
+            else if (key == "bEnableTwoHandedDamage") LegendaryTraits::g_settings.enableTwoHandedDamage = boolVal;
+            else if (key == "bEnableTwoHandedCrit") LegendaryTraits::g_settings.enableTwoHandedCrit = boolVal;
+            else if (key == "bEnableArcheryDamage") LegendaryTraits::g_settings.enableArcheryDamage = boolVal;
+            else if (key == "bEnableArcheryCrit") LegendaryTraits::g_settings.enableArcheryCrit = boolVal;
+            else if (key == "bEnableArcheryStagger") LegendaryTraits::g_settings.enableArcheryStagger = boolVal;
 
-                // Feature Toggles (Block & Resistances)
-                else if (key == "bEnableBlockResistMaster") LegendaryTraits::g_settings.enableBlockResistMaster = boolVal;
-                else if (key == "bEnableBlockResistFire") LegendaryTraits::g_settings.enableBlockResistFire = boolVal;
-                else if (key == "bEnableBlockResistFrost") LegendaryTraits::g_settings.enableBlockResistFrost = boolVal;
-                else if (key == "bEnableBlockResistShock") LegendaryTraits::g_settings.enableBlockResistShock = boolVal;
-                else if (key == "bEnableBlockResistPoison") LegendaryTraits::g_settings.enableBlockResistPoison = boolVal;
-                else if (key == "bEnableBlockResistMagic") LegendaryTraits::g_settings.enableBlockResistMagic = boolVal;
+            // Feature Toggles (Block & Resistances)
+            else if (key == "bEnableBlockResistMaster") LegendaryTraits::g_settings.enableBlockResistMaster = boolVal;
+            else if (key == "bEnableBlockResistFire") LegendaryTraits::g_settings.enableBlockResistFire = boolVal;
+            else if (key == "bEnableBlockResistFrost") LegendaryTraits::g_settings.enableBlockResistFrost = boolVal;
+            else if (key == "bEnableBlockResistShock") LegendaryTraits::g_settings.enableBlockResistShock = boolVal;
+            else if (key == "bEnableBlockResistPoison") LegendaryTraits::g_settings.enableBlockResistPoison = boolVal;
+            else if (key == "bEnableBlockResistMagic") LegendaryTraits::g_settings.enableBlockResistMagic = boolVal;
 
-                // Feature Toggles (Armor & Attributes)
-                else if (key == "bEnableHeavyArmorHealth") LegendaryTraits::g_settings.enableHeavyArmorHealth = boolVal;
-                else if (key == "bEnableHeavyArmorMass") LegendaryTraits::g_settings.enableHeavyArmorMass = boolVal;
-                else if (key == "bEnableLightArmorStaminaRate") LegendaryTraits::g_settings.enableLightArmorStaminaRate = boolVal;
-                else if (key == "bEnableLightArmorStaminaPool") LegendaryTraits::g_settings.enableLightArmorStaminaPool = boolVal;
+            // Feature Toggles (Armor & Attributes)
+            else if (key == "bEnableHeavyArmorHealth") LegendaryTraits::g_settings.enableHeavyArmorHealth = boolVal;
+            else if (key == "bEnableHeavyArmorMass") LegendaryTraits::g_settings.enableHeavyArmorMass = boolVal;
+            else if (key == "bEnableLightArmorStaminaRate") LegendaryTraits::g_settings.enableLightArmorStaminaRate = boolVal;
+            else if (key == "bEnableLightArmorStaminaPool") LegendaryTraits::g_settings.enableLightArmorStaminaPool = boolVal;
 
-                // Feature Toggles (Magic)
-                else if (key == "bEnableDestructionPower") LegendaryTraits::g_settings.enableDestructionPower = boolVal;
-                else if (key == "bEnableRestorationPower") LegendaryTraits::g_settings.enableRestorationPower = boolVal;
-                else if (key == "bEnableRestorationPoisonResist") LegendaryTraits::g_settings.enableRestorationPoisonResist = boolVal;
-                else if (key == "bEnableAlterationDuration") LegendaryTraits::g_settings.enableAlterationDuration = boolVal;
-                else if (key == "bEnableAlterationAbsorption") LegendaryTraits::g_settings.enableAlterationAbsorption = boolVal;
-                else if (key == "bEnableIllusionPower") LegendaryTraits::g_settings.enableIllusionPower = boolVal;
+            // Feature Toggles (Magic)
+            else if (key == "bEnableDestructionPower") LegendaryTraits::g_settings.enableDestructionPower = boolVal;
+            else if (key == "bEnableRestorationPower") LegendaryTraits::g_settings.enableRestorationPower = boolVal;
+            else if (key == "bEnableRestorationPoisonResist") LegendaryTraits::g_settings.enableRestorationPoisonResist = boolVal;
+            else if (key == "bEnableAlterationDuration") LegendaryTraits::g_settings.enableAlterationDuration = boolVal;
+            else if (key == "bEnableAlterationAbsorption") LegendaryTraits::g_settings.enableAlterationAbsorption = boolVal;
+            else if (key == "bEnableIllusionPower") LegendaryTraits::g_settings.enableIllusionPower = boolVal;
 
-                // Feature Toggles (Crafting & Stealth)
-                else if (key == "bEnableSmithingCarryWeight") LegendaryTraits::g_settings.enableSmithingCarryWeight = boolVal;
-                else if (key == "bEnableSmithingArmorPen") LegendaryTraits::g_settings.enableSmithingArmorPen = boolVal;
-                else if (key == "bEnableAlchemyPotency") LegendaryTraits::g_settings.enableAlchemyPotency = boolVal;
-                else if (key == "bEnableEnchantingPower") LegendaryTraits::g_settings.enableEnchantingPower = boolVal;
-                else if (key == "bEnableEnchantingChargeRefund") LegendaryTraits::g_settings.enableEnchantingChargeRefund = boolVal;
-                else if (key == "bEnableSneakEffectiveness") LegendaryTraits::g_settings.enableSneakEffectiveness = boolVal;
-                else if (key == "bEnableSneakAttackMult") LegendaryTraits::g_settings.enableSneakAttackMult = boolVal;
-                else if (key == "bEnableLockpickingWidth") LegendaryTraits::g_settings.enableLockpickingWidth = boolVal;
-                else if (key == "bEnableLockpickingGold") LegendaryTraits::g_settings.enableLockpickingGold = boolVal;
-                else if (key == "bEnablePickpocketChance") LegendaryTraits::g_settings.enablePickpocketChance = boolVal;
-                else if (key == "bEnablePickpocketGold") LegendaryTraits::g_settings.enablePickpocketGold = boolVal;
-                else if (key == "bEnableSpeechBarter") LegendaryTraits::g_settings.enableSpeechBarter = boolVal;
+            // Feature Toggles (Crafting & Stealth)
+            else if (key == "bEnableSmithingCarryWeight") LegendaryTraits::g_settings.enableSmithingCarryWeight = boolVal;
+            else if (key == "bEnableSmithingArmorPen") LegendaryTraits::g_settings.enableSmithingArmorPen = boolVal;
+            else if (key == "bEnableAlchemyPotency") LegendaryTraits::g_settings.enableAlchemyPotency = boolVal;
+            else if (key == "bEnableEnchantingPower") LegendaryTraits::g_settings.enableEnchantingPower = boolVal;
+            else if (key == "bEnableEnchantingChargeRefund") LegendaryTraits::g_settings.enableEnchantingChargeRefund = boolVal;
+            else if (key == "bEnableSneakEffectiveness") LegendaryTraits::g_settings.enableSneakEffectiveness = boolVal;
+            else if (key == "bEnableSneakAttackMult") LegendaryTraits::g_settings.enableSneakAttackMult = boolVal;
+            else if (key == "bEnableLockpickingWidth") LegendaryTraits::g_settings.enableLockpickingWidth = boolVal;
+            else if (key == "bEnableLockpickingGold") LegendaryTraits::g_settings.enableLockpickingGold = boolVal;
+            else if (key == "bEnablePickpocketChance") LegendaryTraits::g_settings.enablePickpocketChance = boolVal;
+            else if (key == "bEnablePickpocketGold") LegendaryTraits::g_settings.enablePickpocketGold = boolVal;
+            else if (key == "bEnableSpeechBarter") LegendaryTraits::g_settings.enableSpeechBarter = boolVal;
 
-                // Diagnostics
-                else if (key == "bVerboseLogging") {
-                    LegendaryTraits::g_settings.verboseLogging = boolVal;
-                }
-            } catch (...) {
+            // Active Effects Display
+            else if (key == "bShowInActiveEffects") LegendaryTraits::g_settings.showInActiveEffects = boolVal;
+
+            // Diagnostics
+            else if (key == "bVerboseLogging") {
+                LegendaryTraits::g_settings.verboseLogging = boolVal;
             }
         }
 
@@ -221,8 +229,9 @@ void OnMessage(SKSE::MessagingInterface::Message* a_message)
 {
     switch (a_message->type) {
     case SKSE::MessagingInterface::kDataLoaded:
-        SKSE::log::info("Game data loaded. Registering event sinks...");
+        SKSE::log::info("Game data loaded. Initializing trait cache and event sinks...");
         SettingsManager::LoadSettings();
+        LegendaryTraits::InitializeSpellCache();
         LegendaryTraits::ThieveryEventHandler::Register();
         LegendaryTraits::CombatEventHandler::Register();
         LegendaryTraits::MenuCloseHandler::Register();
