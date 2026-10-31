@@ -1,9 +1,11 @@
 #pragma once
 
 #include "pch.h"
+#include "RE/S/SendHUDMessage.h"
 #include <algorithm>
 #include <array>
 #include <atomic>
+#include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <string_view>
@@ -13,53 +15,22 @@ namespace LegendaryTraits
     inline constexpr std::size_t kSkillCount = 18;
 
     inline constexpr std::array<const char*, kSkillCount> kSkillNames = {
-        "One-Handed",    // 0
-        "Two-Handed",    // 1
-        "Archery",       // 2
-        "Block",         // 3
-        "Smithing",      // 4
-        "Heavy Armor",   // 5
-        "Light Armor",   // 6
-        "Pickpocket",    // 7
-        "Lockpicking",   // 8
-        "Sneak",         // 9
-        "Alchemy",       // 10
-        "Speech",        // 11
-        "Alteration",    // 12
-        "Conjuration",   // 13
-        "Destruction",   // 14
-        "Illusion",      // 15
-        "Restoration",   // 16
-        "Enchanting"     // 17
+        "One-Handed", "Two-Handed", "Archery", "Block", "Smithing",
+        "Heavy Armor", "Light Armor", "Pickpocket", "Lockpicking", "Sneak",
+        "Alchemy", "Speech", "Alteration", "Conjuration", "Destruction",
+        "Illusion", "Restoration", "Enchanting"
     };
 
-    // ESL FormIDs matching exactly with LegendarySkillTraits.esl tree
     inline constexpr std::array<RE::FormID, kSkillCount> kTraitSpellIDs = {
-        0x804, // 0: One-Handed   (FE000804)
-        0x805, // 1: Two-Handed   (FE000805)
-        0x806, // 2: Archery      (FE000806)
-        0x807, // 3: Block        (FE000807)
-        0x80F, // 4: Smithing     (FE00080F)
-        0x808, // 5: Heavy Armor  (FE000808)
-        0x809, // 6: Light Armor  (FE000809)
-        0x814, // 7: Pickpocket   (FE000814)
-        0x813, // 8: Lockpicking  (FE000813)
-        0x812, // 9: Sneak        (FE000812)
-        0x810, // 10: Alchemy     (FE000810)
-        0x815, // 11: Speech      (FE000815)
-        0x80C, // 12: Alteration  (FE00080C)
-        0x80E, // 13: Conjuration (FE00080E)
-        0x80A, // 14: Destruction (FE00080A)
-        0x80D, // 15: Illusion    (FE00080D)
-        0x80B, // 16: Restoration (FE00080B)
-        0x811  // 17: Enchanting  (FE000811)
+        0x804, 0x805, 0x806, 0x807, 0x80F, 0x808, 0x809, 0x814,
+        0x813, 0x812, 0x810, 0x815, 0x80C, 0x80E, 0x80A, 0x80D,
+        0x80B, 0x811
     };
 
     inline std::array<RE::SpellItem*, kSkillCount> g_traitSpells{};
 
     struct TraitSettings
     {
-        // Magnitudes & Factors
         float oneHandedDamagePerLevel = 8.0f;
         float oneHandedCritPerLevel = 4.0f;
         float twoHandedDamagePerLevel = 10.0f;
@@ -74,18 +45,15 @@ namespace LegendaryTraits
         std::int32_t lockpickingGoldPerLevel = 30;
         float pickpocketChancePerLevel = 5.0f;
         std::int32_t pickpocketGoldPerLevel = 15;
-
         float destructionPowerPerLevel = 10.0f;
         float restorationPowerPerLevel = 10.0f;
         float alterationDurationPerLevel = 15.0f;
         float illusionPowerPerLevel = 10.0f;
-
         float vendorPriceBonusPerLevel = 5.0f;
         float smithingArmorPenPerLevel = 5.0f;
         float alchemyPotencyPerLevel = 3.0f;
         float enchantingPowerPerLevel = 5.0f;
         float enchantingChargeReductionPerLevel = 1.5f;
-
         float healthPercentPerLevel = 0.05f;
         float staggerResistPerLevel = 0.08f;
         float staminaRatePerLevel = 10.0f;
@@ -94,7 +62,6 @@ namespace LegendaryTraits
         float poisonResistPerLevel = 10.0f;
         float spellAbsorptionPerLevel = 3.0f;
 
-        // Feature Toggles (Combat)
         bool enableOneHandedDamage = true;
         bool enableOneHandedCrit = true;
         bool enableTwoHandedDamage = true;
@@ -102,30 +69,22 @@ namespace LegendaryTraits
         bool enableArcheryDamage = true;
         bool enableArcheryCrit = true;
         bool enableArcheryStagger = true;
-
-        // Feature Toggles (Block & Resistances)
         bool enableBlockResistMaster = true;
         bool enableBlockResistFire = true;
         bool enableBlockResistFrost = true;
         bool enableBlockResistShock = true;
         bool enableBlockResistPoison = true;
         bool enableBlockResistMagic = true;
-
-        // Feature Toggles (Armor & Attributes)
         bool enableHeavyArmorHealth = true;
         bool enableHeavyArmorMass = true;
         bool enableLightArmorStaminaRate = true;
         bool enableLightArmorStaminaPool = true;
-
-        // Feature Toggles (Magic)
         bool enableDestructionPower = true;
         bool enableRestorationPower = true;
         bool enableRestorationPoisonResist = true;
         bool enableAlterationDuration = true;
         bool enableAlterationAbsorption = true;
         bool enableIllusionPower = true;
-
-        // Feature Toggles (Crafting & Stealth)
         bool enableSmithingCarryWeight = true;
         bool enableSmithingArmorPen = true;
         bool enableAlchemyPotency = true;
@@ -139,9 +98,12 @@ namespace LegendaryTraits
         bool enablePickpocketGold = true;
         bool enableSpeechBarter = true;
 
-        // Active Effects & Logging
         bool showInActiveEffects = true;
         bool verboseLogging = false;
+        
+        // Modules
+        bool recalibrateAllTraits = false;
+        bool prepareForUninstall = false;
     };
 
     inline TraitSettings g_settings{};
@@ -151,42 +113,80 @@ namespace LegendaryTraits
         float carryWeight = 0.0f;
         float health = 0.0f;
         float staminaRate = 0.0f;
-        float lightArmorStamina = 0.0f;
+        float stamina = 0.0f;
+        float mass = 0.0f;
+        float absorbChance = 0.0f;
+        float resistFire = 0.0f;
+        float resistFrost = 0.0f;
+        float resistShock = 0.0f;
+        float resistMagic = 0.0f;
         float poisonResist = 0.0f;
-        float spellAbsorption = 0.0f;
-        float massModifier = 0.0f;
-
-        float oneHandedDamage = 0.0f;
-        float twoHandedDamage = 0.0f;
-        float archeryDamage = 0.0f;
-        float smithingPenetration = 0.0f;
-        float criticalChance = 0.0f;
-
-        float blockFireResist = 0.0f;
-        float blockFrostResist = 0.0f;
-        float blockShockResist = 0.0f;
-        float blockPoisonResist = 0.0f;
-        float blockMagicResist = 0.0f;
-
-        float sneakAttackMult = 0.0f;
+        float sneakingPower = 0.0f;
+        float sneakingMod = 0.0f;
         float destructionPower = 0.0f;
         float restorationPower = 0.0f;
         float illusionPower = 0.0f;
-        float alterationDuration = 0.0f;
-        float conjurationPower = 0.0f;
-
-        float sneakModifier = 0.0f;
-        float pickpocketModifier = 0.0f;
-        float lockpickingModifier = 0.0f;
-        float speechcraftModifier = 0.0f;
-
-        float alchemyPotency = 0.0f;
-        float enchantingModifier = 0.0f;
+        float alterationPower = 0.0f;
+        float pickpocket = 0.0f;
+        float lockpicking = 0.0f;
+        float speechcraft = 0.0f;
+        float alchemy = 0.0f;
+        float enchanting = 0.0f;
+        float oneHandedPower = 0.0f;
+        float twoHandedPower = 0.0f;
+        float marksmanPower = 0.0f;
+        float criticalChance = 0.0f;
     };
 
     inline AppliedModifiers g_appliedMods{};
     inline std::array<std::uint32_t, kSkillCount> g_legendaryCounts{};
     inline std::atomic<bool> g_isApplyQueued{ false };
+
+    inline bool g_lastRecalibrateState = false;
+    inline bool g_recalibrateInitialized = false;
+
+    namespace Serialization
+    {
+        inline constexpr std::uint32_t kSerializationVersion = 2;
+        inline constexpr std::uint32_t kDataKey = 'MODS';
+
+        inline void SaveCallback(SKSE::SerializationInterface* a_intfc)
+        {
+            if (!a_intfc->OpenRecord(kDataKey, kSerializationVersion)) return;
+            a_intfc->WriteRecordData(&g_appliedMods, sizeof(g_appliedMods));
+        }
+
+        inline void LoadCallback(SKSE::SerializationInterface* a_intfc)
+        {
+            std::uint32_t type, version, length;
+            while (a_intfc->GetNextRecordInfo(type, version, length)) {
+                if (type == kDataKey && version == kSerializationVersion && length == sizeof(g_appliedMods)) {
+                    a_intfc->ReadRecordData(&g_appliedMods, sizeof(g_appliedMods));
+                }
+            }
+        }
+
+        inline void RevertCallback(SKSE::SerializationInterface*)
+        {
+            g_appliedMods = {};
+        }
+    }
+
+    inline bool AreSkillsLoaded()
+    {
+        const auto player = RE::PlayerCharacter::GetSingleton();
+        if (!player || !player->Is3DLoaded()) {
+            return false;
+        }
+
+        const auto& infoData = player->GetInfoRuntimeData();
+        const auto playerSkills = infoData.skills;
+        if (!playerSkills || !playerSkills->data) {
+            return false;
+        }
+
+        return playerSkills->data->skills[0].level > 0.0f;
+    }
 
     inline void UpdateSkillCounts()
     {
@@ -222,9 +222,7 @@ namespace LegendaryTraits
         constexpr auto modName = "LegendarySkillTraits.esl";
         for (std::size_t i = 0; i < kSkillCount; ++i) {
             g_traitSpells[i] = dataHandler->LookupForm<RE::SpellItem>(kTraitSpellIDs[i], modName);
-            if (!g_traitSpells[i]) {
-                SKSE::log::warn("Trait spell 0x{:X} not found in {}", kTraitSpellIDs[i], modName);
-            } else {
+            if (g_traitSpells[i]) {
                 SanitizeSpellEffects(g_traitSpells[i]);
             }
         }
@@ -255,468 +253,252 @@ namespace LegendaryTraits
         }
     }
 
-    inline void RevertOldModifiers(RE::PlayerCharacter* a_player)
-    {
-        if (!a_player) return;
-
-        const auto avOwner = a_player->AsActorValueOwner();
-        if (!avOwner) return;
-
-        constexpr auto modifier = RE::ACTOR_VALUE_MODIFIER::kTemporary;
-
-        if (g_appliedMods.carryWeight > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kCarryWeight, -g_appliedMods.carryWeight);
-            g_appliedMods.carryWeight = 0.0f;
-        }
-        if (g_appliedMods.smithingPenetration > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kOneHandedPowerModifier, -g_appliedMods.smithingPenetration);
-            avOwner->ModActorValue(modifier, RE::ActorValue::kTwoHandedPowerModifier, -g_appliedMods.smithingPenetration);
-            avOwner->ModActorValue(modifier, RE::ActorValue::kMarksmanPowerModifier, -g_appliedMods.smithingPenetration);
-            g_appliedMods.smithingPenetration = 0.0f;
-        }
-        if (g_appliedMods.health > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kHealth, -g_appliedMods.health);
-            g_appliedMods.health = 0.0f;
-        }
-        if (g_appliedMods.staminaRate > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kStaminaRate, -g_appliedMods.staminaRate);
-            g_appliedMods.staminaRate = 0.0f;
-        }
-        if (g_appliedMods.lightArmorStamina > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kStamina, -g_appliedMods.lightArmorStamina);
-            g_appliedMods.lightArmorStamina = 0.0f;
-        }
-        if (g_appliedMods.poisonResist > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kPoisonResist, -g_appliedMods.poisonResist);
-            g_appliedMods.poisonResist = 0.0f;
-        }
-        if (g_appliedMods.spellAbsorption > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kAbsorbChance, -g_appliedMods.spellAbsorption);
-            g_appliedMods.spellAbsorption = 0.0f;
-        }
-        if (g_appliedMods.massModifier > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kMass, -g_appliedMods.massModifier);
-            g_appliedMods.massModifier = 0.0f;
-        }
-        if (g_appliedMods.oneHandedDamage > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kOneHandedPowerModifier, -g_appliedMods.oneHandedDamage);
-            g_appliedMods.oneHandedDamage = 0.0f;
-        }
-        if (g_appliedMods.twoHandedDamage > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kTwoHandedPowerModifier, -g_appliedMods.twoHandedDamage);
-            g_appliedMods.twoHandedDamage = 0.0f;
-        }
-        if (g_appliedMods.archeryDamage > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kMarksmanPowerModifier, -g_appliedMods.archeryDamage);
-            g_appliedMods.archeryDamage = 0.0f;
-        }
-        if (g_appliedMods.criticalChance > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kCriticalChance, -g_appliedMods.criticalChance);
-            g_appliedMods.criticalChance = 0.0f;
-        }
-
-        if (g_appliedMods.blockFireResist > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kResistFire, -g_appliedMods.blockFireResist);
-            g_appliedMods.blockFireResist = 0.0f;
-        }
-        if (g_appliedMods.blockFrostResist > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kResistFrost, -g_appliedMods.blockFrostResist);
-            g_appliedMods.blockFrostResist = 0.0f;
-        }
-        if (g_appliedMods.blockShockResist > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kResistShock, -g_appliedMods.blockShockResist);
-            g_appliedMods.blockShockResist = 0.0f;
-        }
-        if (g_appliedMods.blockPoisonResist > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kPoisonResist, -g_appliedMods.blockPoisonResist);
-            g_appliedMods.blockPoisonResist = 0.0f;
-        }
-        if (g_appliedMods.blockMagicResist > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kResistMagic, -g_appliedMods.blockMagicResist);
-            g_appliedMods.blockMagicResist = 0.0f;
-        }
-
-        if (g_appliedMods.sneakAttackMult > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kSneakingPowerModifier, -g_appliedMods.sneakAttackMult);
-            g_appliedMods.sneakAttackMult = 0.0f;
-        }
-        if (g_appliedMods.destructionPower > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kDestructionPowerModifier, -g_appliedMods.destructionPower);
-            g_appliedMods.destructionPower = 0.0f;
-        }
-        if (g_appliedMods.restorationPower > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kRestorationPowerModifier, -g_appliedMods.restorationPower);
-            g_appliedMods.restorationPower = 0.0f;
-        }
-        if (g_appliedMods.illusionPower > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kIllusionPowerModifier, -g_appliedMods.illusionPower);
-            g_appliedMods.illusionPower = 0.0f;
-        }
-        if (g_appliedMods.alterationDuration > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kAlterationPowerModifier, -g_appliedMods.alterationDuration);
-            g_appliedMods.alterationDuration = 0.0f;
-        }
-        if (g_appliedMods.conjurationPower > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kConjurationPowerModifier, -g_appliedMods.conjurationPower);
-            g_appliedMods.conjurationPower = 0.0f;
-        }
-        if (g_appliedMods.sneakModifier > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kSneakingModifier, -g_appliedMods.sneakModifier);
-            g_appliedMods.sneakModifier = 0.0f;
-        }
-        if (g_appliedMods.pickpocketModifier > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kPickpocketModifier, -g_appliedMods.pickpocketModifier);
-            g_appliedMods.pickpocketModifier = 0.0f;
-        }
-        if (g_appliedMods.lockpickingModifier > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kLockpickingModifier, -g_appliedMods.lockpickingModifier);
-            g_appliedMods.lockpickingModifier = 0.0f;
-        }
-        if (g_appliedMods.speechcraftModifier > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kSpeechcraftModifier, -g_appliedMods.speechcraftModifier);
-            g_appliedMods.speechcraftModifier = 0.0f;
-        }
-        if (g_appliedMods.alchemyPotency > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kAlchemyPowerModifier, -g_appliedMods.alchemyPotency);
-            g_appliedMods.alchemyPotency = 0.0f;
-        }
-        if (g_appliedMods.enchantingModifier > 0.0f) {
-            avOwner->ModActorValue(modifier, RE::ActorValue::kEnchantingModifier, -g_appliedMods.enchantingModifier);
-            g_appliedMods.enchantingModifier = 0.0f;
-        }
-    }
-
-    inline void UpdateActiveEffectSpells(RE::PlayerCharacter* a_player)
+    inline void UpdateActiveEffectSpells(RE::PlayerCharacter* a_player, bool a_forceRemoveAll = false)
     {
         if (!a_player) return;
 
         for (std::size_t i = 0; i < kSkillCount; ++i) {
             const auto spell = g_traitSpells[i];
-            if (!spell) {
+            if (!spell) continue;
+
+            const bool hasSpell = a_player->HasSpell(spell);
+
+            if (a_forceRemoveAll) {
+                if (hasSpell) a_player->RemoveSpell(spell);
                 continue;
             }
 
-            const bool hasSpell = a_player->HasSpell(spell);
             const bool isEnabled = IsSkillTraitEnabled(i);
             const bool shouldHaveSpell = g_settings.showInActiveEffects && isEnabled && (g_legendaryCounts[i] > 0);
 
             if (shouldHaveSpell && !hasSpell) {
                 SanitizeSpellEffects(spell);
                 a_player->AddSpell(spell);
-                if (g_settings.verboseLogging) {
-                    SKSE::log::info("Active Effects: Added trait spell for {}", kSkillNames[i]);
-                }
             } else if (!shouldHaveSpell && hasSpell) {
                 a_player->RemoveSpell(spell);
-                if (g_settings.verboseLogging) {
-                    SKSE::log::info("Active Effects: Removed trait spell for {}", kSkillNames[i]);
-                }
             }
         }
     }
 
     inline void ApplyTraits()
     {
+        if (!AreSkillsLoaded()) {
+            return;
+        }
+
         const auto player = RE::PlayerCharacter::GetSingleton();
         if (!player) return;
-
         const auto avOwner = player->AsActorValueOwner();
         if (!avOwner) return;
 
-        RevertOldModifiers(player);
+        // ==========================================
+        // MODULE: Safe Uninstall (Wipes everything permanently)
+        // ==========================================
+        if (g_settings.prepareForUninstall) {
+            bool wipedAny = false;
+            auto wipeStat = [&](RE::ActorValue av, float& trackedVal) {
+                if (std::abs(trackedVal) > 0.01f) {
+                    avOwner->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, av, -trackedVal);
+                    trackedVal = 0.0f;
+                    wipedAny = true;
+                }
+            };
+
+            wipeStat(RE::ActorValue::kCarryWeight, g_appliedMods.carryWeight);
+            wipeStat(RE::ActorValue::kHealth, g_appliedMods.health);
+            wipeStat(RE::ActorValue::kStaminaRate, g_appliedMods.staminaRate);
+            wipeStat(RE::ActorValue::kStamina, g_appliedMods.stamina);
+            wipeStat(RE::ActorValue::kMass, g_appliedMods.mass);
+            wipeStat(RE::ActorValue::kAbsorbChance, g_appliedMods.absorbChance);
+            wipeStat(RE::ActorValue::kResistFire, g_appliedMods.resistFire);
+            wipeStat(RE::ActorValue::kResistFrost, g_appliedMods.resistFrost);
+            wipeStat(RE::ActorValue::kResistShock, g_appliedMods.resistShock);
+            wipeStat(RE::ActorValue::kResistMagic, g_appliedMods.resistMagic);
+            wipeStat(RE::ActorValue::kPoisonResist, g_appliedMods.poisonResist);
+            wipeStat(RE::ActorValue::kSneakingPowerModifier, g_appliedMods.sneakingPower);
+            wipeStat(RE::ActorValue::kSneakingModifier, g_appliedMods.sneakingMod);
+            wipeStat(RE::ActorValue::kDestructionPowerModifier, g_appliedMods.destructionPower);
+            wipeStat(RE::ActorValue::kRestorationPowerModifier, g_appliedMods.restorationPower);
+            wipeStat(RE::ActorValue::kIllusionPowerModifier, g_appliedMods.illusionPower);
+            wipeStat(RE::ActorValue::kAlterationPowerModifier, g_appliedMods.alterationPower);
+            wipeStat(RE::ActorValue::kPickpocketModifier, g_appliedMods.pickpocket);
+            wipeStat(RE::ActorValue::kLockpickingModifier, g_appliedMods.lockpicking);
+            wipeStat(RE::ActorValue::kSpeechcraftModifier, g_appliedMods.speechcraft);
+            wipeStat(RE::ActorValue::kAlchemyPowerModifier, g_appliedMods.alchemy);
+            wipeStat(RE::ActorValue::kEnchantingModifier, g_appliedMods.enchanting);
+            wipeStat(RE::ActorValue::kOneHandedPowerModifier, g_appliedMods.oneHandedPower);
+            wipeStat(RE::ActorValue::kTwoHandedPowerModifier, g_appliedMods.twoHandedPower);
+            wipeStat(RE::ActorValue::kMarksmanPowerModifier, g_appliedMods.marksmanPower);
+            wipeStat(RE::ActorValue::kCriticalChance, g_appliedMods.criticalChance);
+
+            UpdateActiveEffectSpells(player, true);
+            g_appliedMods = {}; // Hard reset tracking memory
+
+            if (wipedAny) {
+                RE::SendHUDMessage::ShowHUDMessage("Legendary Traits: Safe to uninstall. Please save your game.");
+            }
+            return; // Halt any further trait application
+        }
+
         UpdateSkillCounts();
 
-        SKSE::log::info("--- Applying Legendary Traits ---");
-        bool anyTraitApplied = false;
-
-        constexpr auto modifier = RE::ACTOR_VALUE_MODIFIER::kTemporary;
-
-        // 1. Smithing
-        const auto smithingLevel = g_legendaryCounts[4];
-        if (smithingLevel > 0) {
-            if (g_settings.enableSmithingCarryWeight) {
-                anyTraitApplied = true;
-                const float bonusWeight = static_cast<float>(smithingLevel) * g_settings.carryWeightPerLevel;
-                avOwner->ModActorValue(modifier, RE::ActorValue::kCarryWeight, bonusWeight);
-                g_appliedMods.carryWeight = bonusWeight;
-                SKSE::log::info("Smithing (Legendary {}): +{:.1f} Carry Weight", smithingLevel, bonusWeight);
-            }
-
+        // Step 1: Calculate Intended Target Values
+        AppliedModifiers intended = {};
+        
+        const auto smLvl = g_legendaryCounts[4];
+        if (smLvl > 0) {
+            if (g_settings.enableSmithingCarryWeight) intended.carryWeight = static_cast<float>(smLvl) * g_settings.carryWeightPerLevel;
             if (g_settings.enableSmithingArmorPen) {
-                const float penBonus = static_cast<float>(smithingLevel) * g_settings.smithingArmorPenPerLevel;
-                if (penBonus > 0.0f) {
-                    anyTraitApplied = true;
-                    avOwner->ModActorValue(modifier, RE::ActorValue::kOneHandedPowerModifier, penBonus);
-                    avOwner->ModActorValue(modifier, RE::ActorValue::kTwoHandedPowerModifier, penBonus);
-                    avOwner->ModActorValue(modifier, RE::ActorValue::kMarksmanPowerModifier, penBonus);
-                    g_appliedMods.smithingPenetration = penBonus;
-                    SKSE::log::info("Smithing (Legendary {}): +{:.1f}% Weapon Penetration", smithingLevel, penBonus);
-                }
+                float pen = static_cast<float>(smLvl) * g_settings.smithingArmorPenPerLevel;
+                intended.oneHandedPower += pen;
+                intended.twoHandedPower += pen;
+                intended.marksmanPower += pen;
             }
         }
 
-        // 2. Heavy Armor
-        const auto heavyArmorLevel = g_legendaryCounts[5];
-        if (heavyArmorLevel > 0) {
+        const auto hvLvl = g_legendaryCounts[5];
+        if (hvLvl > 0) {
             if (g_settings.enableHeavyArmorHealth) {
-                anyTraitApplied = true;
                 const float baseHealth = avOwner->GetBaseActorValue(RE::ActorValue::kHealth);
-                const float bonusHealth = baseHealth * (g_settings.healthPercentPerLevel * static_cast<float>(heavyArmorLevel));
-                avOwner->ModActorValue(modifier, RE::ActorValue::kHealth, bonusHealth);
-                g_appliedMods.health = bonusHealth;
-                SKSE::log::info("Heavy Armor (Legendary {}): +{:.1f} Health", heavyArmorLevel, bonusHealth);
+                intended.health = baseHealth * (g_settings.healthPercentPerLevel * static_cast<float>(hvLvl));
             }
-
-            if (g_settings.enableHeavyArmorMass) {
-                anyTraitApplied = true;
-                const float massBonus = static_cast<float>(heavyArmorLevel) * g_settings.staggerResistPerLevel;
-                avOwner->ModActorValue(modifier, RE::ActorValue::kMass, massBonus);
-                g_appliedMods.massModifier = massBonus;
-                SKSE::log::info("Heavy Armor (Legendary {}): +{:.2f} Mass", heavyArmorLevel, massBonus);
-            }
+            if (g_settings.enableHeavyArmorMass) intended.mass = static_cast<float>(hvLvl) * g_settings.staggerResistPerLevel;
         }
 
-        // 3. Light Armor
-        const auto lightArmorLevel = g_legendaryCounts[6];
-        if (lightArmorLevel > 0) {
-            if (g_settings.enableLightArmorStaminaRate) {
-                anyTraitApplied = true;
-                const float stamBonus = static_cast<float>(lightArmorLevel) * g_settings.staminaRatePerLevel;
-                avOwner->ModActorValue(modifier, RE::ActorValue::kStaminaRate, stamBonus);
-                g_appliedMods.staminaRate = stamBonus;
-                SKSE::log::info("Light Armor (Legendary {}): +{:.1f}% Stamina Regen", lightArmorLevel, stamBonus);
-            }
-
-            if (g_settings.enableLightArmorStaminaPool) {
-                anyTraitApplied = true;
-                const float staminaPoolBonus = static_cast<float>(lightArmorLevel) * g_settings.lightArmorStaminaBonusPerLevel;
-                avOwner->ModActorValue(modifier, RE::ActorValue::kStamina, staminaPoolBonus);
-                g_appliedMods.lightArmorStamina = staminaPoolBonus;
-                SKSE::log::info("Light Armor (Legendary {}): +{:.1f} Max Stamina", lightArmorLevel, staminaPoolBonus);
-            }
+        const auto ltLvl = g_legendaryCounts[6];
+        if (ltLvl > 0) {
+            if (g_settings.enableLightArmorStaminaRate) intended.staminaRate = static_cast<float>(ltLvl) * g_settings.staminaRatePerLevel;
+            if (g_settings.enableLightArmorStaminaPool) intended.stamina = static_cast<float>(ltLvl) * g_settings.lightArmorStaminaBonusPerLevel;
         }
 
-        // 4. Restoration
-        const auto restorationLevel = g_legendaryCounts[16];
-        if (restorationLevel > 0 && g_settings.enableRestorationPoisonResist) {
-            anyTraitApplied = true;
-            const float bonus = static_cast<float>(restorationLevel) * g_settings.poisonResistPerLevel;
-            avOwner->ModActorValue(modifier, RE::ActorValue::kPoisonResist, bonus);
-            g_appliedMods.poisonResist = bonus;
-            SKSE::log::info("Restoration (Legendary {}): +{:.1f}% Poison Resistance", restorationLevel, bonus);
+        const auto restLvl = g_legendaryCounts[16];
+        if (restLvl > 0) {
+            if (g_settings.enableRestorationPower) intended.restorationPower = static_cast<float>(restLvl) * g_settings.restorationPowerPerLevel;
+            if (g_settings.enableRestorationPoisonResist) intended.poisonResist += static_cast<float>(restLvl) * g_settings.poisonResistPerLevel;
         }
 
-        // 5. Alteration
-        const auto alterationLevel = g_legendaryCounts[12];
-        if (alterationLevel > 0 && g_settings.enableAlterationAbsorption) {
-            anyTraitApplied = true;
-            const float bonus = static_cast<float>(alterationLevel) * g_settings.spellAbsorptionPerLevel;
-            avOwner->ModActorValue(modifier, RE::ActorValue::kAbsorbChance, bonus);
-            g_appliedMods.spellAbsorption = bonus;
-            SKSE::log::info("Alteration (Legendary {}): +{:.1f}% Spell Absorption", alterationLevel, bonus);
+        const auto altLvl = g_legendaryCounts[12];
+        if (altLvl > 0) {
+            if (g_settings.enableAlterationDuration) intended.alterationPower = static_cast<float>(altLvl) * g_settings.alterationDurationPerLevel;
+            if (g_settings.enableAlterationAbsorption) intended.absorbChance = static_cast<float>(altLvl) * g_settings.spellAbsorptionPerLevel;
         }
 
-        // 6. Weapons & Combat
-        float totalCritChanceBonus = 0.0f;
-
-        const auto oneHandedLevel = g_legendaryCounts[0];
-        if (oneHandedLevel > 0) {
-            if (g_settings.enableOneHandedDamage) {
-                anyTraitApplied = true;
-                const float dmgBonus = static_cast<float>(oneHandedLevel) * g_settings.oneHandedDamagePerLevel;
-                avOwner->ModActorValue(modifier, RE::ActorValue::kOneHandedPowerModifier, dmgBonus);
-                g_appliedMods.oneHandedDamage = dmgBonus;
-                SKSE::log::info("One-Handed (Legendary {}): +{:.1f}% Damage", oneHandedLevel, dmgBonus);
-            }
-            if (g_settings.enableOneHandedCrit) {
-                totalCritChanceBonus += static_cast<float>(oneHandedLevel) * g_settings.oneHandedCritPerLevel;
-            }
+        const auto oneLvl = g_legendaryCounts[0];
+        if (oneLvl > 0) {
+            if (g_settings.enableOneHandedDamage) intended.oneHandedPower += static_cast<float>(oneLvl) * g_settings.oneHandedDamagePerLevel;
+            if (g_settings.enableOneHandedCrit) intended.criticalChance += static_cast<float>(oneLvl) * g_settings.oneHandedCritPerLevel;
         }
 
-        const auto twoHandedLevel = g_legendaryCounts[1];
-        if (twoHandedLevel > 0) {
-            if (g_settings.enableTwoHandedDamage) {
-                anyTraitApplied = true;
-                const float dmgBonus = static_cast<float>(twoHandedLevel) * g_settings.twoHandedDamagePerLevel;
-                avOwner->ModActorValue(modifier, RE::ActorValue::kTwoHandedPowerModifier, dmgBonus);
-                g_appliedMods.twoHandedDamage = dmgBonus;
-                SKSE::log::info("Two-Handed (Legendary {}): +{:.1f}% Damage", twoHandedLevel, dmgBonus);
-            }
-            if (g_settings.enableTwoHandedCrit) {
-                totalCritChanceBonus += static_cast<float>(twoHandedLevel) * g_settings.twoHandedCritPerLevel;
-            }
+        const auto twoLvl = g_legendaryCounts[1];
+        if (twoLvl > 0) {
+            if (g_settings.enableTwoHandedDamage) intended.twoHandedPower += static_cast<float>(twoLvl) * g_settings.twoHandedDamagePerLevel;
+            if (g_settings.enableTwoHandedCrit) intended.criticalChance += static_cast<float>(twoLvl) * g_settings.twoHandedCritPerLevel;
         }
 
-        const auto archeryLevel = g_legendaryCounts[2];
-        if (archeryLevel > 0) {
-            if (g_settings.enableArcheryDamage) {
-                anyTraitApplied = true;
-                const float dmgBonus = static_cast<float>(archeryLevel) * g_settings.archeryDamagePerLevel;
-                avOwner->ModActorValue(modifier, RE::ActorValue::kMarksmanPowerModifier, dmgBonus);
-                g_appliedMods.archeryDamage = dmgBonus;
-                SKSE::log::info("Archery (Legendary {}): +{:.1f}% Damage", archeryLevel, dmgBonus);
-            }
-            if (g_settings.enableArcheryCrit) {
-                totalCritChanceBonus += static_cast<float>(archeryLevel) * g_settings.archeryCritPerLevel;
-            }
+        const auto archLvl = g_legendaryCounts[2];
+        if (archLvl > 0) {
+            if (g_settings.enableArcheryDamage) intended.marksmanPower += static_cast<float>(archLvl) * g_settings.archeryDamagePerLevel;
+            if (g_settings.enableArcheryCrit) intended.criticalChance += static_cast<float>(archLvl) * g_settings.archeryCritPerLevel;
         }
 
-        if (totalCritChanceBonus > 0.0f) {
-            anyTraitApplied = true;
-            avOwner->ModActorValue(modifier, RE::ActorValue::kCriticalChance, totalCritChanceBonus);
-            g_appliedMods.criticalChance = totalCritChanceBonus;
-            SKSE::log::info("Combat Critical Chance: Total +{:.1f}%", totalCritChanceBonus);
+        const auto blkLvl = g_legendaryCounts[3];
+        if (blkLvl > 0 && g_settings.enableBlockResistMaster) {
+            const float baseRes = static_cast<float>(blkLvl) * g_settings.blockElementalReductionPerLevel;
+            if (g_settings.enableBlockResistFire) intended.resistFire = baseRes;
+            if (g_settings.enableBlockResistFrost) intended.resistFrost = baseRes;
+            if (g_settings.enableBlockResistShock) intended.resistShock = baseRes;
+            if (g_settings.enableBlockResistPoison) intended.poisonResist += baseRes;
+            if (g_settings.enableBlockResistMagic) intended.resistMagic = baseRes;
         }
 
-        // Block
-        const auto blockLevel = g_legendaryCounts[3];
-        if (blockLevel > 0 && g_settings.enableBlockResistMaster) {
-            const float resistAmount = static_cast<float>(blockLevel) * g_settings.blockElementalReductionPerLevel;
-            if (resistAmount > 0.0f) {
-                if (g_settings.enableBlockResistFire) {
-                    anyTraitApplied = true;
-                    avOwner->ModActorValue(modifier, RE::ActorValue::kResistFire, resistAmount);
-                    g_appliedMods.blockFireResist = resistAmount;
+        const auto snkLvl = g_legendaryCounts[9];
+        if (snkLvl > 0) {
+            if (g_settings.enableSneakAttackMult) intended.sneakingPower = static_cast<float>(snkLvl) * g_settings.sneakAttackMultPerLevel;
+            if (g_settings.enableSneakEffectiveness) intended.sneakingMod = static_cast<float>(snkLvl) * g_settings.sneakEffectivenessPerLevel;
+        }
+
+        const auto destLvl = g_legendaryCounts[14];
+        if (destLvl > 0 && g_settings.enableDestructionPower) intended.destructionPower = static_cast<float>(destLvl) * g_settings.destructionPowerPerLevel;
+
+        const auto illuLvl = g_legendaryCounts[15];
+        if (illuLvl > 0 && g_settings.enableIllusionPower) intended.illusionPower = static_cast<float>(illuLvl) * g_settings.illusionPowerPerLevel;
+
+        const auto pickLvl = g_legendaryCounts[7];
+        if (pickLvl > 0 && g_settings.enablePickpocketChance) intended.pickpocket = static_cast<float>(pickLvl) * g_settings.pickpocketChancePerLevel;
+
+        const auto lockLvl = g_legendaryCounts[8];
+        if (lockLvl > 0 && g_settings.enableLockpickingWidth) intended.lockpicking = static_cast<float>(lockLvl) * g_settings.lockpickingWidthPerLevel;
+
+        const auto spchLvl = g_legendaryCounts[11];
+        if (spchLvl > 0 && g_settings.enableSpeechBarter) intended.speechcraft = static_cast<float>(spchLvl) * g_settings.vendorPriceBonusPerLevel;
+
+        const auto alchLvl = g_legendaryCounts[10];
+        if (alchLvl > 0 && g_settings.enableAlchemyPotency) intended.alchemy = static_cast<float>(alchLvl) * g_settings.alchemyPotencyPerLevel;
+
+        const auto enchLvl = g_legendaryCounts[17];
+        if (enchLvl > 0 && g_settings.enableEnchantingPower) intended.enchanting = static_cast<float>(enchLvl) * g_settings.enchantingPowerPerLevel;
+
+        // Step 2: MODULE - Safe Update (Recalibrate Bloat Purge) Check
+        bool isRecalibrateRequested = false;
+        if (!g_recalibrateInitialized) {
+            g_lastRecalibrateState = g_settings.recalibrateAllTraits;
+            g_recalibrateInitialized = true;
+        } else if (g_settings.recalibrateAllTraits != g_lastRecalibrateState) {
+            g_lastRecalibrateState = g_settings.recalibrateAllTraits;
+            isRecalibrateRequested = true;
+        }
+
+        // Step 3: Unbreakable Lambda for Permanent ActorValue Modifiers
+        auto applyStat = [&](RE::ActorValue av, float& trackedVal, float intendedVal) {
+            
+            if (isRecalibrateRequested) {
+                // If bloat exists from legacy v2.0.0 on kTemporary, wipe it down to 0
+                float legacyTempBloat = player->GetActorValueModifier(RE::ACTOR_VALUE_MODIFIER::kTemporary, av);
+                if (std::abs(legacyTempBloat) > 0.01f) {
+                    avOwner->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kTemporary, av, -legacyTempBloat);
                 }
-                if (g_settings.enableBlockResistFrost) {
-                    anyTraitApplied = true;
-                    avOwner->ModActorValue(modifier, RE::ActorValue::kResistFrost, resistAmount);
-                    g_appliedMods.blockFrostResist = resistAmount;
-                }
-                if (g_settings.enableBlockResistShock) {
-                    anyTraitApplied = true;
-                    avOwner->ModActorValue(modifier, RE::ActorValue::kResistShock, resistAmount);
-                    g_appliedMods.blockShockResist = resistAmount;
-                }
-                if (g_settings.enableBlockResistPoison) {
-                    anyTraitApplied = true;
-                    avOwner->ModActorValue(modifier, RE::ActorValue::kPoisonResist, resistAmount);
-                    g_appliedMods.blockPoisonResist = resistAmount;
-                }
-                if (g_settings.enableBlockResistMagic) {
-                    anyTraitApplied = true;
-                    avOwner->ModActorValue(modifier, RE::ActorValue::kResistMagic, resistAmount);
-                    g_appliedMods.blockMagicResist = resistAmount;
-                }
-                SKSE::log::info("Block (Legendary {}): Applied active resistances (+{:.1f}%)", blockLevel, resistAmount);
             }
-        }
 
-        // Stealth
-        const auto sneakLevel = g_legendaryCounts[9];
-        if (sneakLevel > 0) {
-            if (g_settings.enableSneakAttackMult) {
-                anyTraitApplied = true;
-                const float sneakAtkBonus = static_cast<float>(sneakLevel) * g_settings.sneakAttackMultPerLevel;
-                avOwner->ModActorValue(modifier, RE::ActorValue::kSneakingPowerModifier, sneakAtkBonus);
-                g_appliedMods.sneakAttackMult = sneakAtkBonus;
-                SKSE::log::info("Sneak (Legendary {}): +{:.1f}% Sneak Attack Damage", sneakLevel, sneakAtkBonus);
+            // Sync kPermanent purely by delta (Calculates mathematically perfect without touching gear)
+            float delta = intendedVal - trackedVal;
+            if (std::abs(delta) > 0.01f) {
+                avOwner->ModActorValue(RE::ACTOR_VALUE_MODIFIER::kPermanent, av, delta);
+                trackedVal = intendedVal;
             }
-            if (g_settings.enableSneakEffectiveness) {
-                anyTraitApplied = true;
-                const float stealthBonus = static_cast<float>(sneakLevel) * g_settings.sneakEffectivenessPerLevel;
-                avOwner->ModActorValue(modifier, RE::ActorValue::kSneakingModifier, stealthBonus);
-                g_appliedMods.sneakModifier = stealthBonus;
-                SKSE::log::info("Sneak (Legendary {}): +{:.1f}% Stealth", sneakLevel, stealthBonus);
-            }
+        };
+
+        applyStat(RE::ActorValue::kCarryWeight, g_appliedMods.carryWeight, intended.carryWeight);
+        applyStat(RE::ActorValue::kHealth, g_appliedMods.health, intended.health);
+        applyStat(RE::ActorValue::kStaminaRate, g_appliedMods.staminaRate, intended.staminaRate);
+        applyStat(RE::ActorValue::kStamina, g_appliedMods.stamina, intended.stamina);
+        applyStat(RE::ActorValue::kMass, g_appliedMods.mass, intended.mass);
+        applyStat(RE::ActorValue::kAbsorbChance, g_appliedMods.absorbChance, intended.absorbChance);
+        applyStat(RE::ActorValue::kResistFire, g_appliedMods.resistFire, intended.resistFire);
+        applyStat(RE::ActorValue::kResistFrost, g_appliedMods.resistFrost, intended.resistFrost);
+        applyStat(RE::ActorValue::kResistShock, g_appliedMods.resistShock, intended.resistShock);
+        applyStat(RE::ActorValue::kResistMagic, g_appliedMods.resistMagic, intended.resistMagic);
+        applyStat(RE::ActorValue::kPoisonResist, g_appliedMods.poisonResist, intended.poisonResist);
+        applyStat(RE::ActorValue::kSneakingPowerModifier, g_appliedMods.sneakingPower, intended.sneakingPower);
+        applyStat(RE::ActorValue::kSneakingModifier, g_appliedMods.sneakingMod, intended.sneakingMod);
+        applyStat(RE::ActorValue::kDestructionPowerModifier, g_appliedMods.destructionPower, intended.destructionPower);
+        applyStat(RE::ActorValue::kRestorationPowerModifier, g_appliedMods.restorationPower, intended.restorationPower);
+        applyStat(RE::ActorValue::kIllusionPowerModifier, g_appliedMods.illusionPower, intended.illusionPower);
+        applyStat(RE::ActorValue::kAlterationPowerModifier, g_appliedMods.alterationPower, intended.alterationPower);
+        applyStat(RE::ActorValue::kPickpocketModifier, g_appliedMods.pickpocket, intended.pickpocket);
+        applyStat(RE::ActorValue::kLockpickingModifier, g_appliedMods.lockpicking, intended.lockpicking);
+        applyStat(RE::ActorValue::kSpeechcraftModifier, g_appliedMods.speechcraft, intended.speechcraft);
+        applyStat(RE::ActorValue::kAlchemyPowerModifier, g_appliedMods.alchemy, intended.alchemy);
+        applyStat(RE::ActorValue::kEnchantingModifier, g_appliedMods.enchanting, intended.enchanting);
+        applyStat(RE::ActorValue::kOneHandedPowerModifier, g_appliedMods.oneHandedPower, intended.oneHandedPower);
+        applyStat(RE::ActorValue::kTwoHandedPowerModifier, g_appliedMods.twoHandedPower, intended.twoHandedPower);
+        applyStat(RE::ActorValue::kMarksmanPowerModifier, g_appliedMods.marksmanPower, intended.marksmanPower);
+        applyStat(RE::ActorValue::kCriticalChance, g_appliedMods.criticalChance, intended.criticalChance);
+
+        if (isRecalibrateRequested) {
+            RE::SendHUDMessage::ShowHUDMessage("Legendary Traits: All attributes safely updated and recalibrated.");
         }
 
-        // Magic Powers
-        const auto destructionLevel = g_legendaryCounts[14];
-        if (destructionLevel > 0 && g_settings.enableDestructionPower) {
-            anyTraitApplied = true;
-            const float bonus = static_cast<float>(destructionLevel) * g_settings.destructionPowerPerLevel;
-            avOwner->ModActorValue(modifier, RE::ActorValue::kDestructionPowerModifier, bonus);
-            g_appliedMods.destructionPower = bonus;
-            SKSE::log::info("Destruction (Legendary {}): +{:.1f}% Spell Magnitude", destructionLevel, bonus);
-        }
-
-        if (restorationLevel > 0 && g_settings.enableRestorationPower) {
-            anyTraitApplied = true;
-            const float bonus = static_cast<float>(restorationLevel) * g_settings.restorationPowerPerLevel;
-            avOwner->ModActorValue(modifier, RE::ActorValue::kRestorationPowerModifier, bonus);
-            g_appliedMods.restorationPower = bonus;
-            SKSE::log::info("Restoration (Legendary {}): +{:.1f}% Healing Magnitude", restorationLevel, bonus);
-        }
-
-        const auto illusionLevel = g_legendaryCounts[15];
-        if (illusionLevel > 0 && g_settings.enableIllusionPower) {
-            anyTraitApplied = true;
-            const float bonus = static_cast<float>(illusionLevel) * g_settings.illusionPowerPerLevel;
-            avOwner->ModActorValue(modifier, RE::ActorValue::kIllusionPowerModifier, bonus);
-            g_appliedMods.illusionPower = bonus;
-            SKSE::log::info("Illusion (Legendary {}): +{:.1f}% Influence Magnitude", illusionLevel, bonus);
-        }
-
-        if (alterationLevel > 0 && g_settings.enableAlterationDuration) {
-            anyTraitApplied = true;
-            const float bonus = static_cast<float>(alterationLevel) * g_settings.alterationDurationPerLevel;
-            avOwner->ModActorValue(modifier, RE::ActorValue::kAlterationPowerModifier, bonus);
-            g_appliedMods.alterationDuration = bonus;
-            SKSE::log::info("Alteration (Legendary {}): +{:.1f}% Duration", alterationLevel, bonus);
-        }
-
-        const auto conjurationLevel = g_legendaryCounts[13];
-        if (conjurationLevel > 0) {
-            anyTraitApplied = true;
-            SKSE::log::info("Conjuration (Legendary {}): Active", conjurationLevel);
-        }
-
-        // Thievery & Barter
-        const auto pickpocketLevel = g_legendaryCounts[7];
-        if (pickpocketLevel > 0 && g_settings.enablePickpocketChance) {
-            anyTraitApplied = true;
-            const float bonus = static_cast<float>(pickpocketLevel) * g_settings.pickpocketChancePerLevel;
-            avOwner->ModActorValue(modifier, RE::ActorValue::kPickpocketModifier, bonus);
-            g_appliedMods.pickpocketModifier = bonus;
-            SKSE::log::info("Pickpocket (Legendary {}): +{:.1f}% Success Chance", pickpocketLevel, bonus);
-        }
-
-        const auto lockpickingLevel = g_legendaryCounts[8];
-        if (lockpickingLevel > 0 && g_settings.enableLockpickingWidth) {
-            anyTraitApplied = true;
-            const float bonus = static_cast<float>(lockpickingLevel) * g_settings.lockpickingWidthPerLevel;
-            avOwner->ModActorValue(modifier, RE::ActorValue::kLockpickingModifier, bonus);
-            g_appliedMods.lockpickingModifier = bonus;
-            SKSE::log::info("Lockpicking (Legendary {}): +{:.1f}% Sweet-spot Width", lockpickingLevel, bonus);
-        }
-
-        const auto speechLevel = g_legendaryCounts[11];
-        if (speechLevel > 0 && g_settings.enableSpeechBarter) {
-            anyTraitApplied = true;
-            const float bonus = static_cast<float>(speechLevel) * g_settings.vendorPriceBonusPerLevel;
-            avOwner->ModActorValue(modifier, RE::ActorValue::kSpeechcraftModifier, bonus);
-            g_appliedMods.speechcraftModifier = bonus;
-            SKSE::log::info("Speech (Legendary {}): +{:.1f}% Barter Prices", speechLevel, bonus);
-        }
-
-        // Crafting Potencies
-        const auto alchemyLevel = g_legendaryCounts[10];
-        if (alchemyLevel > 0 && g_settings.enableAlchemyPotency) {
-            anyTraitApplied = true;
-            const float bonus = static_cast<float>(alchemyLevel) * g_settings.alchemyPotencyPerLevel;
-            avOwner->ModActorValue(modifier, RE::ActorValue::kAlchemyPowerModifier, bonus);
-            g_appliedMods.alchemyPotency = bonus;
-            SKSE::log::info("Alchemy (Legendary {}): +{:.1f}% Potency", alchemyLevel, bonus);
-        }
-
-        const auto enchantingLevel = g_legendaryCounts[17];
-        if (enchantingLevel > 0 && g_settings.enableEnchantingPower) {
-            anyTraitApplied = true;
-            const float bonus = static_cast<float>(enchantingLevel) * g_settings.enchantingPowerPerLevel;
-            avOwner->ModActorValue(modifier, RE::ActorValue::kEnchantingModifier, bonus);
-            g_appliedMods.enchantingModifier = bonus;
-            SKSE::log::info("Enchanting (Legendary {}): +{:.1f}% Enchantment Power", enchantingLevel, bonus);
-        }
-
-        if (!anyTraitApplied) {
-            SKSE::log::info("No legendary traits currently active or enabled.");
-        } else {
-            SKSE::log::info("All enabled traits applied successfully to Player.");
-        }
-
-        // Synchronize Active Effects display spells
-        UpdateActiveEffectSpells(player);
+        UpdateActiveEffectSpells(player, false);
     }
 
     class ThieveryEventHandler : public RE::BSTEventSink<RE::TESTrackedStatsEvent>
@@ -730,21 +512,17 @@ namespace LegendaryTraits
 
         RE::BSEventNotifyControl ProcessEvent(const RE::TESTrackedStatsEvent* a_event, RE::BSTEventSource<RE::TESTrackedStatsEvent>*) override
         {
-            if (!a_event) return RE::BSEventNotifyControl::kContinue;
+            if (!a_event || g_settings.prepareForUninstall) return RE::BSEventNotifyControl::kContinue;
 
-            if (a_event->stat == "Locks Picked") {
-                if (g_settings.enableLockpickingGold) {
-                    const auto lockpickingLevel = g_legendaryCounts[8];
-                    if (lockpickingLevel > 0) {
-                        AwardGoldSilently(static_cast<std::int32_t>(lockpickingLevel) * g_settings.lockpickingGoldPerLevel);
-                    }
+            if (a_event->stat == "Locks Picked" && g_settings.enableLockpickingGold) {
+                const auto lockLevel = g_legendaryCounts[8];
+                if (lockLevel > 0) {
+                    AwardGoldSilently(static_cast<std::int32_t>(lockLevel) * g_settings.lockpickingGoldPerLevel);
                 }
-            } else if (a_event->stat == "Pockets Picked") {
-                if (g_settings.enablePickpocketGold) {
-                    const auto pickpocketLevel = g_legendaryCounts[7];
-                    if (pickpocketLevel > 0) {
-                        AwardGoldSilently(static_cast<std::int32_t>(pickpocketLevel) * g_settings.pickpocketGoldPerLevel);
-                    }
+            } else if (a_event->stat == "Pockets Picked" && g_settings.enablePickpocketGold) {
+                const auto pickLevel = g_legendaryCounts[7];
+                if (pickLevel > 0) {
+                    AwardGoldSilently(static_cast<std::int32_t>(pickLevel) * g_settings.pickpocketGoldPerLevel);
                 }
             }
 
@@ -781,7 +559,7 @@ namespace LegendaryTraits
 
         RE::BSEventNotifyControl ProcessEvent(const RE::TESHitEvent* a_event, RE::BSTEventSource<RE::TESHitEvent>*) override
         {
-            if (!a_event) return RE::BSEventNotifyControl::kContinue;
+            if (!a_event || g_settings.prepareForUninstall) return RE::BSEventNotifyControl::kContinue;
 
             const auto player = RE::PlayerCharacter::GetSingleton();
             if (!player) return RE::BSEventNotifyControl::kContinue;

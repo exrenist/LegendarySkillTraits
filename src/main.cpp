@@ -38,17 +38,13 @@ namespace SettingsManager
         const std::filesystem::path activePath = std::filesystem::exists(kUserConfigPath) ? kUserConfigPath : kDefaultConfigPath;
 
         if (!std::filesystem::exists(activePath)) {
-            SKSE::log::info("No configuration file found. Using hardcoded trait defaults.");
             return;
         }
 
         std::ifstream file(activePath);
         if (!file.is_open()) {
-            SKSE::log::warn("Failed to open configuration file: {}", activePath.string());
             return;
         }
-
-        SKSE::log::info("Loading configuration from '{}'...", activePath.string());
 
         std::string line;
         while (std::getline(file, line)) {
@@ -68,7 +64,7 @@ namespace SettingsManager
             const bool boolVal = ParseBoolValue(valStr);
             const float val = ParseFloatValue(valStr);
 
-            // Combat & Weapon Math
+            // Combat & Weapon Settings
             if (key == "fOneHandedDamagePerLevel") LegendaryTraits::g_settings.oneHandedDamagePerLevel = val;
             else if (key == "fOneHandedCritPerLevel") LegendaryTraits::g_settings.oneHandedCritPerLevel = val;
             else if (key == "fTwoHandedDamagePerLevel") LegendaryTraits::g_settings.twoHandedDamagePerLevel = val;
@@ -84,20 +80,20 @@ namespace SettingsManager
             else if (key == "fPickpocketChancePerLevel") LegendaryTraits::g_settings.pickpocketChancePerLevel = val;
             else if (key == "fPickpocketGoldPerLevel") LegendaryTraits::g_settings.pickpocketGoldPerLevel = static_cast<std::int32_t>(val);
 
-            // Magic Magnitudes & Durations
+            // Magic Settings
             else if (key == "fDestructionPowerPerLevel") LegendaryTraits::g_settings.destructionPowerPerLevel = val;
             else if (key == "fRestorationPowerPerLevel") LegendaryTraits::g_settings.restorationPowerPerLevel = val;
             else if (key == "fAlterationDurationPerLevel") LegendaryTraits::g_settings.alterationDurationPerLevel = val;
             else if (key == "fIllusionPowerPerLevel") LegendaryTraits::g_settings.illusionPowerPerLevel = val;
 
-            // Crafting & Barter
+            // Crafting & Barter Settings
             else if (key == "fVendorPriceBonusPerLevel") LegendaryTraits::g_settings.vendorPriceBonusPerLevel = val;
             else if (key == "fSmithingArmorPenPerLevel") LegendaryTraits::g_settings.smithingArmorPenPerLevel = val;
             else if (key == "fAlchemyPotencyPerLevel") LegendaryTraits::g_settings.alchemyPotencyPerLevel = val;
             else if (key == "fEnchantingPowerPerLevel") LegendaryTraits::g_settings.enchantingPowerPerLevel = val;
             else if (key == "fEnchantingChargeReductionPerLevel") LegendaryTraits::g_settings.enchantingChargeReductionPerLevel = val;
 
-            // Core Character Attributes
+            // Character Attribute Settings
             else if (key == "fHealthPercentPerLevel") LegendaryTraits::g_settings.healthPercentPerLevel = val / 100.0f;
             else if (key == "fStaggerResistPerLevel") LegendaryTraits::g_settings.staggerResistPerLevel = val / 100.0f;
             else if (key == "fStaminaRatePerLevel") LegendaryTraits::g_settings.staminaRatePerLevel = val;
@@ -154,27 +150,26 @@ namespace SettingsManager
             // Active Effects Display
             else if (key == "bShowInActiveEffects") LegendaryTraits::g_settings.showInActiveEffects = boolVal;
 
-            // Diagnostics
-            else if (key == "bVerboseLogging") {
-                LegendaryTraits::g_settings.verboseLogging = boolVal;
-            }
+            // Diagnostics & Uninstall
+            else if (key == "bVerboseLogging") LegendaryTraits::g_settings.verboseLogging = boolVal;
+            else if (key == "bRecalibrateAllTraits") LegendaryTraits::g_settings.recalibrateAllTraits = boolVal;
+            else if (key == "bPrepareForUninstall") LegendaryTraits::g_settings.prepareForUninstall = boolVal;
         }
-
-        SKSE::log::info("Configuration applied successfully.");
     }
 } // namespace SettingsManager
 
 namespace LegendaryTraits
 {
-    inline void QueueApplyTraits()
+    inline void QueueSafeApplyTraits(std::uint32_t a_retry = 0)
     {
-        if (g_isApplyQueued.exchange(true)) {
-            return;
-        }
-
         if (const auto task = SKSE::GetTaskInterface()) {
-            task->AddTask([]() {
-                g_isApplyQueued = false;
+            task->AddTask([a_retry]() {
+                if (!AreSkillsLoaded()) {
+                    if (a_retry < 120) {
+                        QueueSafeApplyTraits(a_retry + 1);
+                    }
+                    return;
+                }
                 SettingsManager::LoadSettings();
                 ApplyTraits();
             });
@@ -192,13 +187,16 @@ namespace LegendaryTraits
 
         RE::BSEventNotifyControl ProcessEvent(const RE::MenuOpenCloseEvent* a_event, RE::BSTEventSource<RE::MenuOpenCloseEvent>*) override
         {
-            if (!a_event) {
-                return RE::BSEventNotifyControl::kContinue;
-            }
+            if (!a_event) return RE::BSEventNotifyControl::kContinue;
 
-            if (!a_event->opening && (a_event->menuName == RE::StatsMenu::MENU_NAME || a_event->menuName == RE::JournalMenu::MENU_NAME)) {
-                SKSE::log::info("Menu closed: {}. Scheduling safe trait evaluation...", a_event->menuName.data());
-                QueueApplyTraits();
+            // ENGINE SYNC FIX: Ensure stats are applied ONLY after the engine has completely finished 
+            // recalculating derived stats (Carry Weight) upon closing the Loading Screen.
+            if (!a_event->opening && (
+                a_event->menuName == RE::StatsMenu::MENU_NAME || 
+                a_event->menuName == RE::JournalMenu::MENU_NAME ||
+                a_event->menuName == RE::LoadingMenu::MENU_NAME)) 
+            {
+                QueueSafeApplyTraits();
             }
 
             return RE::BSEventNotifyControl::kContinue;
@@ -229,19 +227,16 @@ void OnMessage(SKSE::MessagingInterface::Message* a_message)
 {
     switch (a_message->type) {
     case SKSE::MessagingInterface::kDataLoaded:
-        SKSE::log::info("Game data loaded. Initializing trait cache and event sinks...");
         SettingsManager::LoadSettings();
         LegendaryTraits::InitializeSpellCache();
         LegendaryTraits::ThieveryEventHandler::Register();
         LegendaryTraits::CombatEventHandler::Register();
         LegendaryTraits::MenuCloseHandler::Register();
-        SKSE::log::info("Event sinks registered successfully.");
         break;
 
     case SKSE::MessagingInterface::kPostLoadGame:
-        SKSE::log::info("Save loaded. Clearing previous session tracking and scheduling trait application...");
-        LegendaryTraits::g_appliedMods = {};
-        LegendaryTraits::QueueApplyTraits();
+        // Do nothing here. Applying stats here causes race conditions with engine calculation.
+        // Wait for LoadingMenu to close.
         break;
 
     default:
@@ -258,6 +253,16 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
     if (!messaging || !messaging->RegisterListener(OnMessage)) {
         return false;
     }
+
+    const auto serialization = SKSE::GetSerializationInterface();
+    if (!serialization) {
+        return false;
+    }
+
+    serialization->SetUniqueID('LSTT');
+    serialization->SetSaveCallback(LegendaryTraits::Serialization::SaveCallback);
+    serialization->SetLoadCallback(LegendaryTraits::Serialization::LoadCallback);
+    serialization->SetRevertCallback(LegendaryTraits::Serialization::RevertCallback);
 
     return true;
 }
